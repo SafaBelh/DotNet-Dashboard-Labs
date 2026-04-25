@@ -1,0 +1,15 @@
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/bin/Debug/net10.0/DataLab2
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/bin/Debug/net10.0/DataLab2.deps.json
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/bin/Debug/net10.0/DataLab2.runtimeconfig.json
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/bin/Debug/net10.0/DataLab2.dll
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/bin/Debug/net10.0/DataLab2.pdb
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/obj/Debug/net10.0/DataLab2.GeneratedMSBuildEditorConfig.editorconfig
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/obj/Debug/net10.0/DataLab2.AssemblyInfoInputs.cache
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/obj/Debug/net10.0/DataLab2.AssemblyInfo.cs
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/obj/Debug/net10.0/DataLab2.csproj.CoreCompileInputs.cache
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/obj/Debug/net10.0/DataLab2.sourcelink.json
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/obj/Debug/net10.0/DataLab2.dll
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/obj/Debug/net10.0/refint/DataLab2.dll
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/obj/Debug/net10.0/DataLab2.pdb
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/obj/Debug/net10.0/DataLab2.genruntimeconfig.cache
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DataLab2/obj/Debug/net10.0/ref/DataLab2.dll
