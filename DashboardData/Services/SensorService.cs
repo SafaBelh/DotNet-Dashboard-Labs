@@ -27,6 +27,11 @@ public class SensorService : ISensorService
         await _context.SaveChangesAsync();
     }
 
+    public async Task<List<Location>> GetLocationsAsync()
+    {
+        return await _context.Locations.ToListAsync();
+    }
+
 
     // 🟣🟣🟣 KPIs METHODS 
     public async Task<int> GetTotalCountAsync()
@@ -36,7 +41,7 @@ public class SensorService : ISensorService
 
     public async Task<double> GetAverageValueAsync()
     {
-      
+
         if (!await _context.Sensors.AnyAsync())
             return 0;
         return await _context.Sensors.AverageAsync(s => s.Value);
@@ -57,5 +62,31 @@ public class SensorService : ISensorService
             .Where(s => s.Value > threshold)
             .OrderByDescending(s => s.Value)
             .ToListAsync();
+    }
+
+
+    // 🟣🟣🟣 Implmenting CRUD methods 
+    public async Task<SensorData?> GetSensorByIdAsync(int id)
+    {
+        return await _context.Sensors
+            .Include(s => s.Location)
+            .Include(s => s.Tags)
+            .FirstOrDefaultAsync(s => s.Id == id);
+    }
+
+    public async Task UpdateSensorAsync(SensorData sensor)
+    {
+        _context.Sensors.Update(sensor);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteSensorAsync(int id)
+    {
+        var sensor = await _context.Sensors.FindAsync(id);
+        if (sensor != null)
+        {
+            _context.Sensors.Remove(sensor);
+            await _context.SaveChangesAsync();
+        }
     }
 }

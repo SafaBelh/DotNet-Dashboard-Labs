@@ -34,16 +34,16 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/mac/Documents/SCHOOL_2026/DOTNET_C\#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/Components/Pages/AddSensor.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BZGRTZW5zb3IucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = 
-
 [/Users/mac/Documents/SCHOOL_2026/DOTNET_C\#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/Components/Pages/Converter.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Db252ZXJ0ZXIucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/mac/Documents/SCHOOL_2026/DOTNET_C\#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/Components/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Db3VudGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/mac/Documents/SCHOOL_2026/DOTNET_C\#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/Components/Pages/EditSensor.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FZGl0U2Vuc29yLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/mac/Documents/SCHOOL_2026/DOTNET_C\#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/Components/Pages/Error.razor]

@@ -1,91 +1,109 @@
-# TP6 – Async LINQ to SQL (KPIs & Filtering)
+# TP7 – CRUD Forms & Validation (Unified Add/Edit)
 
 **Author:** safabelhouche  
-**Branch:** `tp6`  
+**Branch:** `tp7`  
 **Date:** April 2025  
 
 
-
-## 🧭 TP6 – Overview
+## 🧭 TP7 – Overview
 
 ### 🎯 General Objective
-Make the dashboard **efficient** by moving data processing (filtering, sorting, aggregations) **from the application to the database**.  
-Use **async LINQ** methods like `Where`, `OrderByDescending`, `CountAsync`, `AverageAsync`, `MaxAsync` – they are translated to SQL and executed inside SQLite.
+Add **full CRUD** (Create, Read, Update, Delete) to the sensor dashboard using Blazor's built‑in forms and validation.  
+Create a **unified form** (`EditSensor.razor`) that handles both adding and editing sensors via an optional `Id` route parameter.  
+Use **Data Annotations** to automatically validate user input (`[Required]`, `[StringLength]`, `[Range]`).  
+Add **Edit** and **Delete** buttons to the dashboard table, with a **confirmation dialog** for deletion (bonus exercise).
 
-### 🧠 Why async LINQ on the database?
-- **Performance** – only the needed rows are sent over the network.
-- **Scalability** – aggregations (`Count`, `Average`, `Max`) are computed on the DB side.
-- **Clean code** – no manual loops; declarative queries.
-
-**MERN comparison:**  
-`_context.Sensors.CountAsync()` ≈ `Sensor.countDocuments()`  
-`_context.Sensors.Where(s => s.Value > 30).ToListAsync()` ≈ `Sensor.find({ value: { $gt: 30 } })`
-
+### 🧠 Why this matters
+- **CRUD** is the foundation of most line‑of‑business applications.
+- **Unified form** avoids code duplication (same form for add and edit).
+- **DataAnnotations validation** gives you client‑side (and server‑side) validation without writing JavaScript.
+- The **delete confirmation** prevents accidental data loss.
 
 
-## 📋 TP6 Activities 
+
+## 📋 TP7 Activities 
 
 | Activity | What I did | What I learned |
 |----------|------------|----------------|
-| **1** | Added `GetTotalCountAsync`, `GetAverageValueAsync`, `GetMaxValueAsync` to service | Aggregation methods that run on the DB |
-| **2** | Added `GetCriticalSensorsAsync(threshold)` with `Where` and `OrderByDescending` | Server‑side filtering and sorting |
-| **3** | Displayed KPIs in Bootstrap cards | Presenting aggregated data |
-| **4** | Added buttons to switch between "All sensors" and "Critical sensors" | Real‑time filtering without page reload |
-| **5** | Added loading spinner (`@if (isLoading)`) | Improved user experience |
+| **1** | Extended `ISensorService` with `GetSensorByIdAsync`, `UpdateSensorAsync`, `DeleteSensorAsync` | Full CRUD on service layer |
+| **2** | Created `EditSensor.razor` with two routes (`/edit-sensor`, `/edit-sensor/{Id:int}`) | Unified add/edit pattern |
+| **3** | Used `EditForm`, `DataAnnotationsValidator`, `InputText`, `InputNumber`, `InputSelect` | Blazor form handling and validation |
+| **4** | Added validation attributes to `SensorData` model | `[Required]`, `[StringLength]`, `[Range]`, `[Range]` for LocationId |
+| **5** | Updated `MyDashboard.razor` with **Edit** and **Delete** buttons | Integrating CRUD in the UI |
+| **6** | Added delete confirmation using `IJSRuntime` (bonus) | Calling JavaScript `confirm` from C# |
+| **7** | Added Location dropdown to the form | Avoiding foreign key errors |
 
-At the end, the dashboard shows KPIs and can filter sensors by value.
+At the end, the dashboard has a complete CRUD interface with validation and confirmation.
 
 
 
-## 🗺️ Flow Diagram – Efficient Queries
+## 🗺️ Flow Diagram – Add / Edit Sensor
 
+### Add mode (no ID in URL)
 ```
-User clicks "Alertes (>30.0)"
+User clicks "➕ Nouveau capteur" → navigates to /edit-sensor
          ↓
-MyDashboard.razor calls SensorService.GetCriticalSensorsAsync(30)
+EditSensor.razor loads → currentSensor = new SensorData()
          ↓
-EF Core translates LINQ to SQL:
-   SELECT * FROM Sensors
-   WHERE Value > 30
-   ORDER BY Value DESC
+User fills Name, Value, chooses Location → clicks Enregistrer
          ↓
-SQLite executes query and returns only filtered rows
+OnValidSubmit triggers HandleValidSubmit (validation passes)
          ↓
-Dashboard updates without loading all sensors
+AddSensorAsync called (because Id is null) → sensor saved to database
+         ↓
+Redirect to /dashboard → dashboard shows updated list + refreshed KPIs
 ```
 
----
+### Edit mode (ID in URL, e.g., /edit-sensor/5)
+```
+User clicks "✏️ Éditer" next to a sensor → navigates to /edit-sensor/{Id}
+         ↓
+EditSensor.razor loads → fetches existing sensor by Id via GetSensorByIdAsync
+         ↓
+Form pre‑filled with existing Name, Value, Location
+         ↓
+User modifies data → clicks Enregistrer
+         ↓
+OnValidSubmit triggers HandleValidSubmit (validation passes)
+         ↓
+UpdateSensorAsync called → changes saved to database
+         ↓
+Redirect to /dashboard → dashboard shows updated list + refreshed KPIs
+```
 
-## 🔧 Key LINQ Methods Explained 
-
-| Method | Purpose | SQL equivalent | JS equivalent |
-|--------|---------|----------------|----------------|
-| `.CountAsync()` | Returns number of rows | `SELECT COUNT(*)` | `await collection.countDocuments()` |
-| `.AverageAsync(s => s.Value)` | Average of a column | `SELECT AVG(Value)` | manual reduce / aggregate |
-| `.MaxAsync(s => s.Value)` | Maximum value | `SELECT MAX(Value)` | `Math.max` + map / aggregate |
-| `.Where(s => s.Value > threshold)` | Filter rows | `WHERE Value > @threshold` | `.filter()` |
-| `.OrderByDescending(s => s.Value)` | Sort descending | `ORDER BY Value DESC` | `.sort((a,b)=>b-a)` |
-| `.Include(s => s.Location)` | Eager load related entity | `LEFT JOIN Locations` | `.populate()` |
-
-All these methods are **executed inside the database** – only the final result is sent to the app.
 
 
+## 🔧 Key Blazor Form Concepts
 
-## 📁 Project Structure (after TP6)
+| Component | Purpose | Equivalent in React |
+|-----------|---------|---------------------|
+| `EditForm` | Wraps form, handles validation and submission | `<form onSubmit={...}>` |
+| `DataAnnotationsValidator` | Reads validation attributes from model | `yup` / `zod` integration |
+| `ValidationSummary` | Displays all validation errors | `errors.summary` |
+| `ValidationMessage` | Displays error for a specific field | `errors.name?.message` |
+| `InputText` | Text input with validation integration | `<input>` + `value` + `onChange` |
+| `InputNumber` | Numeric input with validation | `<input type="number">` |
+| `InputSelect` | Dropdown with validation | `<select>` + `value` + `onChange` |
+
+
+
+## 📁 Project Structure (after TP7)
 
 ```
 DashboardData/
 ├── Components/
 │   └── Pages/
-│       └── MyDashboard.razor          ← updated with KPIs and filter buttons
+│       ├── MyDashboard.razor          ← added Edit/Delete buttons
+│       └── EditSensor.razor           ← unified add/edit form
+├── Models/
+│   └── SensorData.cs                  ← added validation attributes
 ├── Services/
-│   ├── ISensorService.cs              ← new async methods
-│   └── SensorService.cs               ← implementations with EF Core
-├── Models/                            ← unchanged from TP5
-├── Data/                              ← unchanged
+│   ├── ISensorService.cs              ← CRUD methods
+│   └── SensorService.cs               ← implementations
+├── Data/                              ← (unchanged)
 ├── app.db                             ← SQLite database
-├── tp6-dashboard-full.png             ← screenshot (all sensors)
-├── tp6-dashboard-critical.png         ← screenshot (critical only)
+├── tp7-edit-form.png                  ← screenshot of edit form
+├── tp7-dashboard.png                  ← screenshot of dashboard with buttons
 └── ...
 ```
 
@@ -95,11 +113,13 @@ DashboardData/
 
 | File | Description |
 |------|-------------|
-| `DashboardData/Services/ISensorService.cs` | Added `GetTotalCountAsync`, `GetAverageValueAsync`, `GetMaxValueAsync`, `GetCriticalSensorsAsync`. |
-| `DashboardData/Services/SensorService.cs` | Implementations using `CountAsync`, `AverageAsync`, `MaxAsync`, `Where`, `OrderByDescending`. |
-| `DashboardData/Components/Pages/MyDashboard.razor` | KPIs cards, filter buttons, loading spinner. |
-| `DashboardData/tp6-dashboard-full.png` | Screenshot showing all sensors with KPIs. |
-| `DashboardData/tp6-dashboard-critical.png` | Screenshot showing only sensors with value > 30. |
+| `DashboardData/Components/Pages/EditSensor.razor` | Unified form for add and edit, with validation and Location dropdown. |
+| `DashboardData/Components/Pages/MyDashboard.razor` | Added "Nouveau capteur" button, Edit and Delete buttons, delete confirmation. |
+| `DashboardData/Models/SensorData.cs` | Validation attributes: `[Required]`, `[StringLength]`, `[Range]`. |
+| `DashboardData/Services/ISensorService.cs` | Added `GetSensorByIdAsync`, `UpdateSensorAsync`, `DeleteSensorAsync`, `GetLocationsAsync`. |
+| `DashboardData/Services/SensorService.cs` | Implementations using EF Core. |
+| `DashboardData/tp7-edit-form.png` | Screenshot of the form with dropdown and validation error (if any). |
+| `DashboardData/tp7-dashboard.png` | Screenshot of the dashboard with Edit/Delete buttons. |
 
 
 
@@ -110,36 +130,44 @@ cd DashboardData
 dotnet watch
 ```
 
-Then open `https://localhost:5056/dashboard`.  
-Click the **Alertes (>30.0)** button to see only critical sensors.  
-Click **Toutes les sondes** to restore the full list.
+Then open:
+- Dashboard: `https://localhost:5000/dashboard`
+- Add a new sensor: click **➕ Nouveau capteur** (or navigate to `/edit-sensor`)
+- Edit an existing sensor: click **✏️ Éditer** next to a sensor
+- Delete a sensor: click **🗑️ Supprimer** → confirmation dialog appears
 
 
 
 ## 📸 Execution output
 
-### All sensors (default)
-![Full dashboard](DashboardData/tp6-dashboard-full.png)
+### Dashboard with Edit and Delete buttons
+![Dashboard buttons screenshot](DashboardData/tp7-dashboard.png)
 
-### Critical sensors (value > 30)
-![Critical sensors](DashboardData/tp6-dashboard-critical.png)
+### Edit / Add Sensor Form (with Location dropdown)
+![Edit form screenshot](DashboardData/tp7-edit-form.png)
+
+
+### Confirm delete dialog (IJSRuntime)
+![Dashboard buttons screenshot](DashboardData/tp7-confirm-delete-dialog.png)
 
 
 
 ## 🧠 What I learned
 
-- ✅ **Server‑side filtering** – `Where` clause is translated to SQL `WHERE`, reducing network traffic.
-- ✅ **Async aggregations** – `CountAsync`, `AverageAsync`, `MaxAsync` run on the DB, not in memory.
-- ✅ **Eager loading** – `Include()` loads related entities in one query (JOIN).
-- ✅ **Dynamic UI** – buttons switch between different queries without reloading the page.
-- ✅ **Loading spinner** – improves perceived performance during async operations.
+- ✅ How to create a **unified add/edit page** using an optional route parameter.
+- ✅ How to use `EditForm`, `DataAnnotationsValidator`, and `ValidationMessage` for automatic validation.
+- ✅ How to add **validation attributes** to a model (`[Required]`, `[StringLength]`, `[Range]`).
+- ✅ How to **load dropdown data** (Locations) asynchronously in a form.
+- ✅ How to add **Edit** and **Delete** buttons to a table.
+- ✅ How to **call JavaScript** from Blazor (`IJSRuntime.InvokeAsync<bool>("confirm", ...)`) for a confirmation dialog.
+- ✅ How to **refresh the table and KPIs** after a delete operation.
 
 
 
 ## 🔗 Branch information
 
-This code is stored in the **`tp6` branch** of the repository.  
-It builds on `tp5` (database, seeding, relationships) and adds efficient LINQ queries and a more interactive dashboard.
+This code is stored in the **`tp7` branch** of the repository.  
+It builds on the work from `tp6` (KPIs, async LINQ) and adds full CRUD with validation.
 
 ---
 

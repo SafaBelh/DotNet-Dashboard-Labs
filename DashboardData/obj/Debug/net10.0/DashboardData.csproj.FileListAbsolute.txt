@@ -24,7 +24,6 @@
 /Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/obj/Debug/net10.0/scopedcss/Components/Layout/ReconnectModal.razor.rz.scp.css
 /Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/obj/Debug/net10.0/scopedcss/bundle/DashboardData.styles.css
 /Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/obj/Debug/net10.0/scopedcss/projectbundle/DashboardData.bundle.scp.css
-/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/obj/Debug/net10.0/compressed/2ef6xb0qiq-{0}-khy4lop6wu-khy4lop6wu.gz
 /Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/obj/Debug/net10.0/compressed/9d7gv20ecr-{0}-bqjiyaj88i-bqjiyaj88i.gz
 /Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/obj/Debug/net10.0/compressed/c9mzagx45w-{0}-c2jlpeoesf-c2jlpeoesf.gz
 /Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/obj/Debug/net10.0/compressed/42hj1bpodi-{0}-erw9l3u2r3-erw9l3u2r3.gz
@@ -201,3 +200,4 @@
 /Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/bin/Debug/net10.0/runtimes/win-x86/native/e_sqlite3.dll
 /Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/obj/Debug/net10.0/DashboardData.csproj.AssemblyReference.cache
 /Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/obj/Debug/net10.0/Dashboar.83D8E715.Up2Date
+/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/obj/Debug/net10.0/compressed/2ef6xb0qiq-{0}-ce7lld180p-ce7lld180p.gz
