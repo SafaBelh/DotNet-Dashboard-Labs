@@ -7,7 +7,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// 🟣 Adding SensorService
 builder.Services.AddScoped<ISensorService, SensorService>();
+
+// 🟠 Singleton – one instance for the entire application
+builder.Services.AddSingleton<UserCounterService>();
+
+// 🟠 Scoped – one instance per user circuit 
+// builder.Services.AddScoped<UserCounterService>();
+
+// 🟠 Transient – new instance every time
+// builder.Services.AddTransient<UserCounterService>();
+
 
 var app = builder.Build();
 

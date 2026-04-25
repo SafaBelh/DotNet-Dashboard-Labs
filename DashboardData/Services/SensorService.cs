@@ -15,4 +15,8 @@ public class SensorService : ISensorService
     {
         return _sensors;
     }
+    public void AddSensor(SensorData sensor)
+    {
+        _sensors.Add(sensor);
+    }
 }
