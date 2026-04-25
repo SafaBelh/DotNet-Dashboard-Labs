@@ -32,7 +32,7 @@ dotnet run
 
 ## 📸 Execution output
 
-![Terminal output](DataLab1/tp1-output.png)
+![Terminal output](DataLab2/tp2-output.png)
 
 ## 🧠 What I learned
 ✅ LINQ method syntax is similar to JavaScript array methods (Where = filter, Select map, OrderBy = sort).
