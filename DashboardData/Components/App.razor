@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["DashboardData.styles.css"]" />
+    <link rel="stylesheet" href="_content/Radzen.Blazor/css/material-base.css">
+    <RadzenTheme Theme="material" />
     
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -19,6 +21,7 @@
     <Routes />
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js?=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
 </body>
 
 </html>

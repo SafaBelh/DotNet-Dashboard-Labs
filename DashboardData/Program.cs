@@ -3,6 +3,8 @@ using DashboardData.Data;
 using DashboardData.Components;
 using DashboardData.Services;
 using DashboardData.Models;
+using Radzen;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -27,6 +29,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(connectionString));
 
+// 🟣 Adding Radzen 
+builder.Services.AddRadzenComponents();
 
 var app = builder.Build();
 

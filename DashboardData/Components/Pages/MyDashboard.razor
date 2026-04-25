@@ -2,9 +2,11 @@
 @rendermode InteractiveServer
 @using DashboardData.Models
 @using DashboardData.Services
+@using DashboardData.Components.UI
+@using Radzen
+@using Radzen.Blazor
 @inject ISensorService SensorService
 @inject IJSRuntime JS
-@using DashboardData.Components.UI
 
 <PageTitle>Mon Dashboard</PageTitle>
 
@@ -14,27 +16,80 @@
     Nous sommes le : <strong>@DateTime.Now.ToString("dd MMMM yyyy")</strong>
 </div>
 
+<!-- 🟣🟣🟣 KPIs Cards (using KpiCard component) 🟣🟣🟣 -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <KpiCard Title="📊 Total sondes" Value="@totalCount.ToString()" BackgroundColorClass="bg-primary" IconClass="bi-box-seam" />
+    </div>
+    <div class="col-md-4">
+        <KpiCard Title="📈 Moyenne globale" Value="@($"{averageValue:F1} °C")" BackgroundColorClass="bg-success" IconClass="bi-bullseye" />
+    </div>
+    <div class="col-md-4">
+        <KpiCard Title="🔥 Valeur max" Value="@($"{maxValue:F1} °C")" BackgroundColorClass="bg-danger" IconClass="bi-exclamation-triangle-fill" />
+    </div>
+</div>
+
+<!-- 🟣🟣🟣 Bar chart + Radial Gauge row 🟣🟣🟣 -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart-fill text-primary"></i> Températures Moyennes par Emplacement</h5>
+            </div>
+            <div class="card-body">
+                <RadzenChart SeriesClick="@OnChartClick">
+                    <RadzenColumnSeries Data="@LocationStats" 
+                                        CategoryProperty="LocationName" 
+                                        ValueProperty="AverageValue" 
+                                        Title="Moyenne" 
+                                        Fill="#0d6efd" />
+                    <RadzenValueAxis Formatter="@((value) => Math.Round((double)value, 1) + " °C")" />
+                    <RadzenLegend Visible="false" />
+                </RadzenChart>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-speedometer2 text-danger"></i> Valeur Max Détectée</h5>
+            </div>
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <RadzenRadialGauge Style="width: 100%; height: 250px;">
+                    <RadzenRadialGaugeScale StartAngle="0" EndAngle="100" Step="20">
+                        <RadzenRadialGaugeScalePointer Value="@maxValue" Length="0.6" ShowValue="true" />
+                        <RadzenRadialGaugeScaleRange From="0" To="40" Fill="green" />
+                        <RadzenRadialGaugeScaleRange From="40" To="70" Fill="orange" />
+                        <RadzenRadialGaugeScaleRange From="70" To="100" Fill="red" />
+                    </RadzenRadialGaugeScale>
+                </RadzenRadialGauge>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🟣🟣🟣 Donut chart (sensor count per location) 🟣🟣🟣 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart-fill text-info"></i> Répartition des capteurs par emplacement</h5>
+            </div>
+            <div class="card-body">
+                <RadzenChart>
+                    <RadzenDonutSeries Data="@CountStats" CategoryProperty="LocationName" ValueProperty="Count" />
+                </RadzenChart>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🟣🟣🟣 View toggle button 🟣🟣🟣 -->
 <button class="btn btn-outline-secondary mb-3" @onclick="() => showAsCards = !showAsCards">
     @(showAsCards ? "📋 Vue tableau" : "🃏 Vue cartes")
 </button>
 
-<!-- KPIs Cards -->
-<div class="row mb-4">
-    <div class="col-md-4">
-        <KpiCard Title="📊 Total sondes" Value="@totalCount.ToString()" BackgroundColorClass="bg-primary"
-            IconClass="bi-box-seam" />
-    </div>
-    <div class="col-md-4">
-        <KpiCard Title="📈 Moyenne globale" Value="@($"{averageValue:F1} °C")" BackgroundColorClass="bg-success"
-            IconClass="bi-bullseye)" />
-    </div>
-    <div class="col-md-4">
-        <KpiCard Title="🔥 Valeur max" Value="@($"{maxValue:F1} °C")" BackgroundColorClass="bg-danger"
-            IconClass="bi-exclamation-triangle-fill" />
-    </div>
-</div>
-
-<!-- Filter buttons -->
+<!-- 🟣🟣🟣 Action buttons 🟣🟣🟣 -->
 <div class="mb-3 btns-wrapper-dash">
     <a href="/edit-sensor" class="btn btn-success">➕ Nouveau capteur</a>
     <button class="btn btn-secondary me-2" @onclick="LoadAll">📋 Toutes les sondes</button>
@@ -50,7 +105,7 @@ else
     @if (showAsCards)
     {
         <div class="row">
-            @foreach (var sensor in sensors)
+            @foreach (var sensor in FilteredSensors)  
             {
                 <div class="col-md-4 mb-3">
                     <SensorCard Sensor="sensor" OnDeleteClicked="DeleteSensor" />
@@ -60,30 +115,46 @@ else
     }
     else
     {
-        <SensorTable Sensors="sensors" OnDeleteClicked="DeleteSensor" />
+        <SensorTable Sensors="FilteredSensors" OnDeleteClicked="DeleteSensor" />   
     }
 }
 
 @code {
+    // ===== Existing state =====
     private bool IsSystemOK = true;
     private string LastLog = "Rien à signaler";
     private List<SensorData> sensors = new();
     private bool isLoading = true;
     private bool showAsCards = false;
 
-    // 🟣🟣🟣 KPI VARIABLES
+    // KPIs
     private int totalCount = 0;
     private double averageValue = 0;
     private double maxValue = 0;
 
-    // 🟣🟣🟣 KPI METHODS
+    // Chart data
+    private List<LocationStat> LocationStats = new();
+    private List<LocationCountStat> CountStats = new();
 
+    // Cross‑filtering
+    private string? SelectedLocationFilter = null;
+
+    // Computed property for filtered sensors (used in both table and cards)
+    private List<SensorData> FilteredSensors =>
+        SelectedLocationFilter == null
+            ? sensors
+            : sensors.Where(s => s.Location?.Name == SelectedLocationFilter).ToList();
+
+    // ===== Lifecycle =====
     protected override async Task OnInitializedAsync()
     {
         await LoadAll();
         await LoadKPIs();
+        LocationStats = await SensorService.GetAverageValueByLocationAsync();
+        CountStats = await SensorService.GetSensorCountByLocationAsync();
     }
 
+    // ===== Data loading =====
     private async Task LoadAll()
     {
         isLoading = true;
@@ -105,6 +176,17 @@ else
         maxValue = await SensorService.GetMaxValueAsync();
     }
 
+    // ===== Chart click (cross‑filtering) =====
+    private void OnChartClick(SeriesClickEventArgs args)
+    {
+        string clickedLocation = args.Category.ToString();
+        if (SelectedLocationFilter == clickedLocation)
+            SelectedLocationFilter = null;  // toggle off
+        else
+            SelectedLocationFilter = clickedLocation;
+    }
+
+    // ===== System status (optional, kept from earlier) =====
     private void RefreshSystem()
     {
         var rnd = new Random();
@@ -112,22 +194,14 @@ else
         LastLog = IsSystemOK ? "Tout va bien" : "Anomalie détectée !";
     }
 
-    // 🟣🟣🟣 CRUD METHODS - DELETE
-    @* private async Task DeleteSensor(int id)
-{
-await SensorService.DeleteSensorAsync(id);
-await LoadAll();
-await LoadKPIs();
-} *@
-
+    // ===== Delete with confirmation =====
     private async Task DeleteSensor(int id)
     {
-        bool confirmed = await JS.InvokeAsync<bool>("window.confirm", "Voulez-vous vraiment supprimer ce capteur ?");
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", "Voulez-vous vraiment supprimer ce capteur ?");
         if (!confirmed) return;
 
         await SensorService.DeleteSensorAsync(id);
         await LoadAll();
         await LoadKPIs();
     }
-
 }

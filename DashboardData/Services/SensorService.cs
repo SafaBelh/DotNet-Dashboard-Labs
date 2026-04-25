@@ -89,4 +89,30 @@ public class SensorService : ISensorService
             await _context.SaveChangesAsync();
         }
     }
+
+    // 🟣🟣🟣 Radzen KPIs
+    public async Task<List<LocationStat>> GetAverageValueByLocationAsync()
+    {
+        return await _context.Sensors
+            .Include(s => s.Location)
+            .GroupBy(s => s.Location.Name)
+            .Select(g => new LocationStat
+            {
+                LocationName = g.Key ?? "Inconnu",
+                AverageValue = g.Average(s => s.Value)
+            })
+            .ToListAsync();
+    }
+    public async Task<List<LocationCountStat>> GetSensorCountByLocationAsync()
+    {
+        return await _context.Sensors
+            .Include(s => s.Location)
+            .GroupBy(s => s.Location.Name)
+            .Select(g => new LocationCountStat
+            {
+                LocationName = g.Key ?? "Inconnu",
+                Count = g.Count()
+            })
+            .ToListAsync();
+    }
 }

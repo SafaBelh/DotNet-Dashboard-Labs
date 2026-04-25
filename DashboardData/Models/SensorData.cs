@@ -24,3 +24,15 @@ public class SensorData
 
     public ICollection<Tag> Tags { get; set; } = new List<Tag>();
 }
+
+public class LocationStat
+{
+    public string LocationName { get; set; } = "";
+    public double AverageValue { get; set; }
+}
+
+public class LocationCountStat
+{
+    public string LocationName { get; set; } = "";
+    public int Count { get; set; }
+}

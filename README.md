@@ -1,115 +1,109 @@
-# TP8 – Component Architecture & Communication
+# TP9 – Data Visualization with Radzen (Charts, Gauge, Cross‑Filtering)
 
 **Author:** safabelhouche  
-**Branch:** `tp8`  
+**Branch:** `tp9`  
 **Date:** April 2025  
 
+---
 
-
-## 🧭 TP8 – Overview
+## 🧭 TP9 – Overview
 
 ### 🎯 General Objective
-Refactor the dashboard into **reusable UI components** to make the code modular, maintainable, and testable.  
-Learn how to pass data **from parent to child** using `[Parameter]` and how to send events **from child back to parent** using `EventCallback`.  
-Create components for KPIs (`KpiCard`), sensor table (`SensorTable`), and sensor card (`SensorCard`).  
-Add a **view toggle** to switch between table and card layouts.
+Add interactive data visualizations to the dashboard using **Radzen.Blazor** components.  
+Learn to prepare **aggregated data** with LINQ `GroupBy` (executed on the database).  
+Implement a **bar chart** (average value per location), a **radial gauge** (max value), and a **donut chart** (sensor count per location).  
+Enable **cross‑filtering**: clicking a bar filters the sensor table/cards below.
 
-### 🧠 Why component architecture?
-- **Reusability** – components can be used in multiple places.
-- **Separation of concerns** – each component does one thing.
-- **Easier maintenance** – change one component, affect all its uses.
-- **Better collaboration** – different developers can work on different components.
-
+### 🧠 Why Radzen?
+- Professional charts and gauges without manual JavaScript.
+- Tight integration with Blazor and EF Core.
+- High performance because aggregation is done in SQL.
 
 
-## 📋 TP8 Activities 
+
+## 📋 TP9 Activities 
 
 | Activity | What I did | What I learned |
 |----------|------------|----------------|
-| **1** | Created `KpiCard.razor` with `[Parameter]` properties | Passing simple data (string, number) to a child component |
-| **2** | Replaced the three hardcoded cards in `MyDashboard` with `<KpiCard>` | Composition and reusability |
-| **3** | Created `SensorTable.razor` and moved the table HTML | Passing a list of objects via `[Parameter]` |
-| **4** | Added `EventCallback<int> OnDeleteClicked` to `SensorTable` | Child‑to‑parent communication (notifying parent of an action) |
-| **5** | Created `SensorCard.razor` (Exercise 1) | Displaying a single sensor as a Bootstrap card |
-| **6** | Added view toggle (table / cards) with a button (Exercise 2) | Conditional rendering and UI state management |
+| **1** | Installed `Radzen.Blazor` and configured theme, services, script | Using third‑party UI libraries |
+| **2** | Added `LocationStat` and `LocationCountStat` classes inside `SensorData.cs` | Simple DTOs for chart data |
+| **3** | Created `GetAverageValueByLocationAsync()` and `GetSensorCountByLocationAsync()` | LINQ `GroupBy` translated to SQL `GROUP BY` |
+| **4** | Added bar chart (`RadzenColumnSeries`) with custom formatter | Data binding and axis formatting |
+| **5** | Implemented cross‑filtering (`SeriesClick` event, `FilteredSensors` property) | Interactive dashboards |
+| **6** | Added radial gauge for max value | Displaying a single metric with colour zones |
+| **7** | Added donut chart for sensor count per location | Another aggregation and chart type |
 
-At the end, `MyDashboard.razor` is clean and composed of reusable components.
+At the end, the dashboard has professional charts that react to user clicks.
 
 
 
-## 🗺️ Communication Flow Diagram
+## 🗺️ Data Flow for Bar Chart
 
-### Parent → Child (data)
 ```
-MyDashboard.razor
-    <KpiCard Title="Total sondes" Value="@totalCount" ... />
-                    ↓
-            [Parameter] string Title
-            [Parameter] string Value
-                    ↓
-            KpiCard displays the data
-```
-
-### Child → Parent (events)
-```
-SensorTable.razor
-    <button @onclick="() => OnDeleteClicked.InvokeAsync(sensor.Id)">
-                    ↓
-            EventCallback<int> OnDeleteClicked
-                    ↓
-            MyDashboard.razor binds OnDeleteClicked="DeleteSensor"
-                    ↓
-            DeleteSensor(int id) runs in the parent
+Database (Sensors table with Location)
+         ↓
+EF Core + LINQ GroupBy → SQL GROUP BY Location, AVG(Value)
+         ↓
+SensorService.GetAverageValueByLocationAsync()
+         ↓
+List<LocationStat> (LocationName, AverageValue)
+         ↓
+RadzenColumnSeries binds to Data, CategoryProperty, ValueProperty
+         ↓
+Bar chart rendered
 ```
 
 
 
-## 🔧 Key Blazor Component Concepts 
+## 🔧 Key Radzen Components Used
 
-| Concept | Purpose | MERN equivalent |
-|---------|---------|-----------------|
-| `[Parameter]` | Receives data from parent component | `props` in React |
-| `EventCallback<T>` | Sends an event (with data) from child to parent | callback function passed as prop |
-| `@bind-Value` | Two‑way binding on component parameters | `value` + `onChange` |
-| Child component reuse | `<KpiCard ... />` multiple times | `<KpiCard ... />` in JSX |
-| `@if` / `@else` | Conditional rendering | ternary or `&&` operator |
+| Component | Purpose |
+|-----------|---------|
+| `RadzenChart` | Container for charts |
+| `RadzenColumnSeries` | Bar chart series |
+| `RadzenValueAxis` | Y‑axis with custom formatter |
+| `RadzenRadialGauge` | Gauge with scale and pointer |
+| `RadzenRadialGaugeScaleRange` | Colour zones (green, orange, red) |
+| `RadzenDonutSeries` | Donut / pie chart |
 
 
 
-## 📁 Project Structure (after TP8)
+## 📁 Project Structure (after TP9)
 
 ```
 DashboardData/
 ├── Components/
-│   ├── UI/                                 ← new folder for reusable components
-│   │   ├── KpiCard.razor                   ← displays a single KPI
-│   │   ├── SensorTable.razor               ← displays the sensor table (with delete event)
-│   │   └── SensorCard.razor                ← displays a single sensor as a card
+│   ├── UI/               (KpiCard, SensorTable, SensorCard)
 │   └── Pages/
-│       └── MyDashboard.razor               ← now uses these components
+│       └── MyDashboard.razor   ← added charts, cross‑filtering, view toggle
 ├── Models/
+│   └── SensorData.cs            ← contains LocationStat and LocationCountStat
 ├── Services/
+│   ├── ISensorService.cs        ← new aggregation methods
+│   └── SensorService.cs         ← implementations with GroupBy
 ├── Data/
 ├── wwwroot/
-├── tp8-dashboard-table.png                 ← screenshot (table view)
-├── tp8-dashboard-cards.png                 ← screenshot (card view)
+├── tp9-dashboard-radzen-charts-1.png       ← screenshot of the dashboard with all charts
+├── tp9-dashboard-radzen-charts-2.png 
 └── ...
 ```
 
----
+
 
 ## 📂 Files in this branch
 
 | File | Description |
 |------|-------------|
-| `DashboardData/Components/UI/KpiCard.razor` | Reusable KPI card (Title, Value, BackgroundColor, Icon). |
-| `DashboardData/Components/UI/SensorTable.razor` | Table component that receives `List<SensorData>` and an `EventCallback` for delete. |
-| `DashboardData/Components/UI/SensorCard.razor` | Card component for a single sensor (Exercise 1). |
-| `DashboardData/Components/Pages/MyDashboard.razor` | Refactored to use `<KpiCard>`, `<SensorTable>`, and view toggle. |
-| `DashboardData/tp8-dashboard-table.png` | Screenshot of the dashboard in table view. |
-| `DashboardData/tp8-dashboard-cards.png` | Screenshot of the dashboard in card view. |
+| `DashboardData/Models/SensorData.cs` | Added `LocationStat` and `LocationCountStat` inner classes. |
+| `DashboardData/Services/ISensorService.cs` | Added `GetAverageValueByLocationAsync`, `GetSensorCountByLocationAsync`. |
+| `DashboardData/Services/SensorService.cs` | Implementations using `GroupBy`, `Average`, `Count`. |
+| `DashboardData/Components/Pages/MyDashboard.razor` | Integrated all charts, cross‑filtering, view toggle, KPI cards. |
+| `DashboardData/Components/_Imports.razor` | Added `@using Radzen` and `@using Radzen.Blazor`. |
+| `DashboardData/Program.cs` | Added `builder.Services.AddRadzenComponents()`. |
+| `DashboardData/Components/App.razor` | Added `<RadzenTheme Theme="material" />` and the Radzen script. |
+| `DashboardData/tp9-dashboard-full.png` | Screenshot showing the bar chart, gauge, donut, and sensor list. |
 
----
+
 
 ## ▶️ How to run
 
@@ -118,38 +112,36 @@ cd DashboardData
 dotnet watch
 ```
 
-Then open `https://localhost:5056/dashboard`.  
-Click the **"🃏 Vue cartes"** button to switch to card view; click **"📋 Vue tableau"** to go back.
+Then open `https://localhost:5056/dashboard`.
 
----
+
 
 ## 📸 Execution output
 
-### Table view (default)
-![Table view screenshot](DashboardData/tp8-dashboard-table.png)
-
-### Card view (after clicking the toggle button)
-![Card view screenshot](DashboardData/tp8-dashboard-cards.png)
+### Full dashboard with charts and cross‑filtering
+![Full dashboard screenshot](DashboardData/tp9-dashboard-radzen-charts-1.png)
+![Full dashboard screenshot](DashboardData/tp9-dashboard-radzen-charts-2.png)
 
 
 
 ## 🧠 What I learned
 
-- ✅ How to create **dumb components** that receive data via `[Parameter]`.
-- ✅ How to **reuse** the same component multiple times with different data.
-- ✅ How to use `EventCallback<T>` to **notify the parent** when an action occurs (e.g., delete button clicked).
-- ✅ How to **move logic** (like delete) out of child components – children only emit events, parents handle the actual operation.
-- ✅ How to add a **view toggle** to switch between two different visual representations of the same data.
-- ✅ How to keep `MyDashboard.razor` clean and focused on orchestrating components.
+- ✅ How to install and configure **Radzen.Blazor**.
+- ✅ How to write **aggregation queries** with `GroupBy`, `Average`, and `Count` that run on the database.
+- ✅ How to **bind chart data** to a simple list of objects.
+- ✅ How to implement **cross‑filtering** using a chart's `SeriesClick` event and a computed property (`FilteredSensors`).
+- ✅ How to use a **radial gauge** to show a single critical metric with colour‑coded ranges.
+- ✅ How to create a **donut chart** for proportional distribution.
+- ✅ How to keep the **view toggle** (table / cards) from TP8 and make it work with the filtered data.
 
 
 
 ## 🔗 Branch information
 
-This code is stored in the **`tp8` branch** of the repository.  
-It builds on `tp7` (CRUD, validation) and adds component architecture and view toggle.
+This code is stored in the **`tp9` branch** of the repository.  
+It builds on `tp8` (component architecture, view toggle) and adds full data visualization.
 
----
+
 
 **Copyright © 2025 safabelhouche – All rights reserved.**  
 *This work is part of the .NET C# Programming course at Ecole Polytechnique de Sousse.*

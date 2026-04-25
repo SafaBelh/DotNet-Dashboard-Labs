@@ -14,4 +14,6 @@ public interface ISensorService
     Task<SensorData?> GetSensorByIdAsync(int id);
     Task UpdateSensorAsync(SensorData sensor);
     Task DeleteSensorAsync(int id);
+    Task<List<LocationStat>> GetAverageValueByLocationAsync();
+    Task<List<LocationCountStat>> GetSensorCountByLocationAsync();
 }
