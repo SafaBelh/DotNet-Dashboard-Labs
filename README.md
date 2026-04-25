@@ -1,66 +1,67 @@
-# TP3 – Blazor Web App (Interactive Dashboard)
+# TP4 – Dependency Injection & Asynchronous Services
 
 **Author:** safabelhouche  
-**Branch:** `tp3`  
+**Branch:** `tp4`  
 **Date:** April 2025  
 
 
-## 🧭 TP3 – Blazor Web App (Overview)
+## 🧭 TP4 – Dependency Injection (Overview)
 
 ### 🎯 General Objective
-Move from the **console** (black screen) to a **real web application** with a graphical interface, using Blazor – Microsoft's framework for interactive web UIs with C# instead of JavaScript.
+Separate the **data logic** from the **UI** by moving the sensor list into a dedicated **service**.  
+Learn how to **register** and **inject** services using the built‑in Dependency Injection (DI) container.  
+Make the service **asynchronous** to simulate real‑world delays and add a **loading indicator** to the dashboard.
 
-### 🧠 Why Blazor?
-I already know C# from TP1‑2. Blazor will let me use that same language to build **modern, interactive web pages** without writing a single line of JavaScript. It runs on the server via WebSockets (SignalR) or on WebAssembly.
-
-### 🧩 Core Concepts (MERN comparison)
-
-| Blazor concept | React equivalent |
-|----------------|------------------|
-| `.razor` component | `.jsx` component |
-| `@page "/url"` | `<Route path="/url" element={<Page />}` |
-| `@rendermode InteractiveServer` | enables client‑server interaction (like a live connection) |
-| `@code { ... }` | `export default function Component() { ... }` |
-| `@onclick="Method"` | `onClick={handler}` |
-| `@DateTime.Now` | `{new Date().toLocaleDateString()}` |
-| `@if (condition) { ... }` | `{condition ? <div>...</div> : null}` |
-| `NavLink` | `NavLink` from React Router |
+### 🧠 Why Dependency Injection?
+- **Separation of concerns** – UI (Blazor) and business logic (services) are independent.
+- **Reusability** – the same service can be used in many pages.
+- **Testability** – you can replace the real service with a mock for unit tests.
+- **Flexibility** – swap implementations (e.g., from in‑memory list to a real database) without changing the page.
 
 
+## 🔁 Core Concepts (MERN comparison)
 
-## 📋 TP3 Activities (Teacher's Lab)
-
-| Activity | What i did | What i learned |
-|----------|------------------|----------------|
-| **1** | Generate and explore the Blazor project | Project structure, files, `dotnet watch` (hot reload) |
-| **2** | Create `MyDashboard.razor` page | Routing, HTML/C# mixing, conditional rendering |
-| **3** | Add a link to the left menu | Navigation, `NavLink` component |
-| **4** | Make the page interactive (`@onclick`) | Event handling, state change → UI update |
-| **5** | Integrate a data class (`SensorData`) | Using models, display a list in a table |
-| **Exercice 1** | Temperature converter (two‑way binding) | `@bind`, `InputNumber`, computed values |
-| **Exercice 2** | System log simulator (dynamic CSS) | `@foreach`, conditional CSS classes |
+| DI concept | React / Node equivalent |
+|------------|-------------------------|
+| Service class | A JavaScript module that fetches data (e.g., `sensorService.js`) |
+| Interface (`ISensorService`) | TypeScript interface / contract |
+| `AddScoped` | Registering a provider with a specific lifetime (per user circuit) |
+| `@inject` | `import` + using a hook / context (e.g., `useContext`) |
 
 
+## 📋 TP4 Activities (Teacher's Lab)
 
-## 🗺️ Flow Diagram (Main Dashboard)
+| Activity | What I did | What I learned |
+|----------|------------|----------------|
+| **1** | Created `SensorService` with an in‑memory list | Writing a plain C# data service |
+| **2** | Defined `ISensorService` interface | Interface = contract; allows multiple implementations |
+| **3** | Registered the service in `Program.cs` with `AddScoped` | DI container configuration |
+| **4** | Injected `ISensorService` into `MyDashboard.razor` using `@inject` | Using a service inside a component |
+| **5** | Made the service asynchronous (`GetSensorsAsync`) with `Task.Delay(2000)` | Simulate network latency |
+| **6** | Updated the dashboard to use `OnInitializedAsync` and added a loading spinner | Async UI patterns |
 
+
+## 🗺️ Flow Diagram (Without vs With DI)
+
+### Before (TP3)
 ```
-User opens browser → /dashboard
-         ↓
-Blazor loads MyDashboard.razor
-         ↓
-Page shows: date, status badge, a button
-         ↓
-User clicks button → RefreshSystem() C# method runs
-         ↓
-IsSystemOK and LastLog change → UI updates automatically
-         ↓
-No page reload, no JavaScript – just C# events
+MyDashboard.razor
+   └── hardcoded list of sensors (inside @code)
 ```
 
+### After (TP4)
+```
+Program.cs (registers service)
+       ↓
+MyDashboard.razor → @inject ISensorService
+       ↓
+SensorService (provides data)
+       ↓
+MyDashboard.razor displays the data + loading spinner
+```
 
 
-## 📁 Project Structure
+## 📁 Project Structure (after TP4)
 
 ```
 DashboardData/
@@ -69,34 +70,29 @@ DashboardData/
 │   │   ├── MainLayout.razor
 │   │   └── NavMenu.razor
 │   └── Pages/
-│       ├── Home.razor
-│       ├── Counter.razor
-│       ├── Weather.razor
-│       ├── MyDashboard.razor      (main dashboard)
-│       ├── Converter.razor        (Exercise 1)
-│       └── Logs.razor             (Exercise 2)
+│       ├── MyDashboard.razor      ← modified to use service
+│       ├── Converter.razor
+│       └── Logs.razor
 ├── Models/
 │   └── SensorData.cs
-├── Program.cs
+├── Services/                       ← new folder
+│   ├── ISensorService.cs           ← interface
+│   └── SensorService.cs            ← implementation
+├── Program.cs                      ← registration added
 ├── appsettings.json
 └── wwwroot/
 ```
-
 
 
 ## 📂 Files in this branch
 
 | File | Description |
 |------|-------------|
-| `DashboardData/` | Complete Blazor Web App project. |
-| `DashboardData/Components/Pages/MyDashboard.razor` | Main dashboard page (status button + sensor table). |
-| `DashboardData/Components/Pages/Converter.razor` | Temperature converter (two‑way binding). |
-| `DashboardData/Components/Pages/Logs.razor` | System log simulator (dynamic CSS classes). |
-| `DashboardData/Models/SensorData.cs` | Sensor model. |
-| `DashboardData/tp3-dashboard.png` | Screenshot of the main dashboard. |
-| `DashboardData/tp3-converter.png` | Screenshot of the converter page. |
-| `DashboardData/tp3-logs.png` | Screenshot of the logs page. |
-
+| `DashboardData/Services/ISensorService.cs` | Interface declaring `GetSensorsAsync()`. |
+| `DashboardData/Services/SensorService.cs` | Service with in‑memory list and `Task.Delay` simulation. |
+| `DashboardData/Components/Pages/MyDashboard.razor` | Injected service, async loading, loading spinner. |
+| `DashboardData/Program.cs` | Service registration (`AddScoped<ISensorService, SensorService>()`). |
+| *(other files from TP3 are unchanged)* | Converter, Logs, models, etc. |
 
 
 ## ▶️ How to run
@@ -105,43 +101,29 @@ DashboardData/
 cd DashboardData
 dotnet watch
 ```
-
-Then open in browser:
-- Main dashboard: `https://localhost:{PORT}/dashboard`
-- Converter: `https://localhost:{PORT}/converter`
-- Logs: `https://localhost:{PORT}/logs`
-
+Then open `https://localhost:5056/dashboard`
 
 
 ## 📸 Execution output
 
-### Main Dashboard
-![Dashboard screenshot](DashboardData/tp3-dashboard.png)
-
-### Temperature Converter
-![Converter screenshot](DashboardData/tp3-converter.png)
-
-### System Log Simulator
-![Logs screenshot](DashboardData/tp3-logs.png)
-
+*I dont have Screenshots here – The dashboard looks the same as TP3, but now with a loading spinner and data from the service.*
 
 
 ## 🧠 What I learned
 
-- ✅ Blazor components combine HTML and C# in `.razor` files.
-- ✅ `@page` defines a route, `@rendermode InteractiveServer` enables live interaction.
-- ✅ `@onclick` calls C# methods without JavaScript.
-- ✅ State changes automatically update the UI.
-- ✅ `@foreach` and `@if` allow dynamic HTML generation.
-- ✅ `NavLink` provides active link highlighting.
-- ✅ **Two‑way binding** with `@bind` connects an input to a C# field.
-- ✅ **Ternary operator** in `class` attribute enables dynamic CSS styling.
-- ✅ **Computed properties** (`int ErrorCount => ...`) recalculate when the UI re‑renders.
+- ✅ How to create a **service** (plain C# class) and an **interface**.
+- ✅ How to **register** the service in `Program.cs` (`AddScoped`).
+- ✅ How to **inject** the service into a component using `@inject`.
+- ✅ The difference between **synchronous** and **asynchronous** service methods.
+- ✅ How to simulate a delay with `Task.Delay`.
+- ✅ How to use `OnInitializedAsync` and add a **loading spinner** (`@if (isLoading)`).
+- ✅ That the UI is now **decoupled** from the data source – we can later change the service to use a real database without touching the page.
 
 
 ## 🔗 Branch information
 
-This code is stored in the **`tp3` branch** of the repository.
+This code is stored in the **`tp4` branch** of the repository.  
+It builds on the work from the `tp3` branch (the dashboard, converter, and logs are still there, but the main dashboard now uses DI and async).
 
 ---
 
