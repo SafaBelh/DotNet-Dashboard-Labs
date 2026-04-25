@@ -1,0 +1,70 @@
+@page "/dashboard"
+@rendermode InteractiveServer
+@using DashboardData.Models
+
+<PageTitle>Mon Dashboard</PageTitle>
+
+<h1>Tableau de Bord</h1>
+
+<div class="alert alert-info">
+    Nous sommes le : <strong>@DateTime.Now.ToString("dd MMMM yyyy")</strong>
+</div>
+
+<p>
+    Status du système :
+    @if (IsSystemOK)
+    {
+        <span class="badge bg-success">Opérationnel</span>
+    }
+    else
+    {
+        <span class="badge bg-danger">Erreur Critique</span>
+    }
+</p>
+
+<button class="btn btn-primary" @onclick="RefreshSystem">Actualiser le statut</button>
+
+<div class="mt-3 card card-body">
+    Logs : @LastLog
+</div>
+
+<h2>Capteurs en temps réel</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Valeur</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sensor in sensors)
+        {
+            <tr>
+                <td>@sensor.Name</td>
+                <td>@sensor.Value</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@code {
+    private bool IsSystemOK = true;
+    private string LastLog = "Rien à signaler";
+
+    private void RefreshSystem()
+    {
+        var rnd = new Random();
+        IsSystemOK = rnd.Next(0, 10) > 2; // 80% chance of OK
+        LastLog = IsSystemOK ? "Tout va bien" : "Anomalie détectée !";
+    }
+
+    private List<SensorData> sensors = new()
+        {
+            new SensorData { Name = "Temp_Salon", Value = 22.5 },
+            new SensorData { Name = "Hum_Cuisine", Value = 45.0 },
+            new SensorData { Name = "CO2_Bureau", Value = 800 }
+        };
+
+}

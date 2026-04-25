@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "uHsbC7RXjMo=",
+  "success": true,
+  "projectFilePath": "/Users/mac/Documents/SCHOOL_2026/DOTNET_C#_SCHOOL_LABS/DotNet-Dashboard-Labs/DashboardData/DashboardData.csproj",
+  "expectedPackageFiles": [
+    "/Users/mac/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.6/microsoft.aspnetcore.app.internal.assets.10.0.6.nupkg.sha512"
+  ],
+  "logs": []
+}
