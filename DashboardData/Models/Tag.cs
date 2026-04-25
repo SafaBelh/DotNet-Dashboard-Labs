@@ -1,0 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace DashboardData.Models;
+
+public class Tag
+{
+    [Key]
+    public int Id { get; set; }
+
+    [Required]
+    [StringLength(30)]
+    public string Label { get; set; } = "";
+
+    // Navigation: many-to-many with SensorData
+    public ICollection<SensorData> Sensors { get; set; } = new List<SensorData>();
+}

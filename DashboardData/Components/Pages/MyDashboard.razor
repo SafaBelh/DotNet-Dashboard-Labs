@@ -36,7 +36,10 @@
     <thead>
         <tr>
             <th>Nom</th>
+            <th>Emplacement</th>
             <th>Valeur</th>
+
+
         </tr>
     </thead>
     <tbody>
@@ -44,7 +47,9 @@
         {
             <tr>
                 <td>@sensor.Name</td>
+                <td>@(sensor.Location?.Name ?? "Non défini")</td>
                 <td>@sensor.Value</td>
+
             </tr>
         }
     </tbody>
@@ -59,12 +64,13 @@
     private void RefreshSystem()
     {
         var rnd = new Random();
-        IsSystemOK = rnd.Next(0, 10) > 2; 
+        IsSystemOK = rnd.Next(0, 10) > 2;
         LastLog = IsSystemOK ? "Tout va bien" : "Anomalie détectée !";
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        sensors = SensorService.GetSensors();
+        sensors = await SensorService.GetSensorsAsync();
+
     }
 }

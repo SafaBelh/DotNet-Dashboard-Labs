@@ -1,22 +1,28 @@
 using DashboardData.Models;
+using DashboardData.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace DashboardData.Services;
 
 public class SensorService : ISensorService
 {
-    private List<SensorData> _sensors = new()
-    {
-        new SensorData { Name = "Temp_Salon", Value = 22.5 },
-        new SensorData { Name = "Hum_Cuisine", Value = 45.0 },
-        new SensorData { Name = "CO2_Bureau", Value = 800 }
-    };
+    private readonly AppDbContext _context;
 
-    public List<SensorData> GetSensors()
+    public SensorService(AppDbContext context)
     {
-        return _sensors;
+        _context = context;
     }
-    public void AddSensor(SensorData sensor)
+
+    public async Task<List<SensorData>> GetSensorsAsync()
     {
-        _sensors.Add(sensor);
+        return await _context.Sensors
+            .Include(s => s.Location)
+            .ToListAsync();
+    }
+
+    public async Task AddSensorAsync(SensorData sensor)
+    {
+        _context.Sensors.Add(sensor);
+        await _context.SaveChangesAsync();
     }
 }

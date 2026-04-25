@@ -1,110 +1,118 @@
-# TP4 – Dependency Injection & Asynchronous Services
+# TP5 – Entity Framework Core & SQLite (Database Persistence)
 
 **Author:** safabelhouche  
-**Branch:** `tp4`  
+**Branch:** `tp5`  
 **Date:** April 2025  
 
 
 
-## 🧭 TP4 – Dependency Injection (Overview)
+## 🧭 TP5 – Overview
 
 ### 🎯 General Objective
-Separate the **data logic** from the **UI** by moving the sensor list into a dedicated **service**.  
-Learn how to **register** and **inject** services using the built‑in Dependency Injection (DI) container.  
-Make the service **asynchronous** to simulate real‑world delays and add a **loading indicator** to the dashboard.  
-Implement a **page to add new sensors** (Exercice 1) and **experiment with DI lifetimes** (Bonus).
+Replace the **in‑memory list** in `SensorService` with a **real SQLite database** using Entity Framework Core (EF Core).  
+Learn **Code‑First** development: define C# classes, and EF Core creates the database schema.  
+Understand **relationships** (1‑to‑N, N‑to‑N) and **migrations**.
 
-### 🧠 Why Dependency Injection?
-- **Separation of concerns** – UI (Blazor) and business logic (services) are independent.
-- **Reusability** – the same service can be used in many pages.
-- **Testability** – you can replace the real service with a mock for unit tests.
-- **Flexibility** – swap implementations (e.g., from in‑memory list to a real database) without changing the page.
-
-
-## 🔁 Core Concepts (MERN comparison)
-
-| DI concept | React / Node equivalent |
-|------------|-------------------------|
-| Service class | A JavaScript module that fetches data (e.g., `sensorService.js`) |
-| Interface (`ISensorService`) | TypeScript interface / contract |
-| `AddScoped` | Registering a provider with a specific lifetime (per user circuit) |
-| `@inject` | `import` + using a hook / context (e.g., `useContext`) |
+### 🧠 Why EF Core?
+- **ORM** – maps C# objects to database tables.
+- **LINQ to SQL** – queries written in LINQ are translated to SQL and executed on the DB.
+- **Migrations** – version control for your database schema.
+- **Relationships** – easy handling of foreign keys and pivot tables.
 
 
-## 📋 TP4 Activities
+
+## 📋 TP5 Activities 
 
 | Activity | What I did | What I learned |
 |----------|------------|----------------|
-| **1** | Created `SensorService` with an in‑memory list | Writing a plain C# data service |
-| **2** | Defined `ISensorService` interface | Interface = contract; allows multiple implementations |
-| **3** | Registered the service in `Program.cs` with `AddScoped` | DI container configuration |
-| **4** | Injected `ISensorService` into `MyDashboard.razor` using `@inject` | Using a service inside a component |
-| **5** | Made the service asynchronous (`GetSensorsAsync`) with `Task.Delay(2000)` | Simulate network latency |
-| **6** | Updated the dashboard to use `OnInitializedAsync` and added a loading spinner | Async UI patterns |
-| **Exercice 1** | Created `AddSensor.razor` to add new sensors | Using the service to write data; navigation after save |
-| **Bonus** | Created `UserCounterService` and experimented with Singleton, Scoped, Transient | Understanding DI lifetimes |
+| **1** | Installed EF Core packages (`Sqlite`, `Design`, `dotnet-ef` tool) | Tooling for migrations |
+| **2** | Added `Location` and `Tag` models, modified `SensorData` | Relationships: 1‑to‑N, N‑to‑N |
+| **3** | Created `AppDbContext` with `DbSet<>` properties | The bridge between C# and database |
+| **4** | Configured connection string in `appsettings.json` and registered DbContext in `Program.cs` | DI for DbContext |
+| **5** | Ran migrations (`InitialCreate`) and updated database | Generated SQLite file `app.db` |
+| **6** | Seeded the database with Locations, Tags, Sensors with relations – **Exercice 1** | Data seeding |
+| **7** | Added `SensorValueHistory` model and migration – **Exercice 2** | Adding a new 1‑to‑N relationship |
+
+At the end, the dashboard reads and writes data from/to a real SQLite database.
 
 
-## 🗺️ Flow Diagram (Without vs With DI)
 
-### Before (TP3)
+## 🗺️ Flow Diagram – Before vs After TP5
+
+### Before (TP4 – in‑memory list)
 ```
-MyDashboard.razor
-   └── hardcoded list of sensors (inside @code)
-```
-
-### After (TP4)
-```
-Program.cs (registers service)
-       ↓
-MyDashboard.razor → @inject ISensorService
-       ↓
-SensorService (provides data)
-       ↓
-MyDashboard.razor displays the data + loading spinner
+SensorService (private List<SensorData> _sensors)
+         ↓
+MyDashboard.razor displays data from memory
+         ↓
+Data lost on app restart
 ```
 
+### After (TP5 – SQLite database)
+```
+AppDbContext (connected to app.db)
+         ↓
+SensorService (uses DbContext to query database)
+         ↓
+MyDashboard.razor displays data from real DB
+         ↓
+Data persists across restarts
+```
 
-## 📁 Project Structure (after TP4)
+
+
+## 🔧 New Concepts (Explained for Beginners)
+
+- **`[Key]`** – marks a property as the Primary Key.
+- **`[Required]`** – database column cannot be `NULL`.
+- **`[StringLength(100)]`** – maximum length of a string column.
+- **`ICollection<T>`** – navigation property for relationships (e.g., one Location has many Sensors).
+- **`Include()`** – eager loading: loads related data in a single query (SQL JOIN).
+- **Migrations** – `dotnet ef migrations add Name` creates C# files describing schema changes; `dotnet ef database update` applies them.
+- **Seeding** – inserting initial data when the database is first created.
+
+
+
+## 📁 Project Structure (after TP5)
 
 ```
 DashboardData/
 ├── Components/
 │   ├── Layout/
-│   │   ├── MainLayout.razor
-│   │   └── NavMenu.razor
 │   └── Pages/
-│       ├── MyDashboard.razor      ← modified to use service + async
-│       ├── AddSensor.razor        ← Exercice 1
-│       ├── Counter.razor          ← modified for Bonus experiment
-│       ├── Converter.razor
-│       └── Logs.razor
+├── Data/
+│   └── AppDbContext.cs
 ├── Models/
-│   └── SensorData.cs
+│   ├── SensorData.cs
+│   ├── Location.cs
+│   ├── Tag.cs
+│   └── SensorValueHistory.cs          ← Exercice 2
 ├── Services/
 │   ├── ISensorService.cs
-│   ├── SensorService.cs
-│   └── UserCounterService.cs      ← Bonus experiment
-├── Program.cs                      ← registration added
-├── appsettings.json
-└── wwwroot/
+│   └── SensorService.cs               ← now uses DbContext
+├── Migrations/                        ← auto‑generated
+├── appsettings.json                   ← connection string added
+├── Program.cs                         ← DbContext registration
+├── app.db                             ← SQLite database file
+└── ...
 ```
+
 
 
 ## 📂 Files in this branch
 
 | File | Description |
 |------|-------------|
-| `DashboardData/Services/ISensorService.cs` | Interface with `GetSensorsAsync()` and `AddSensor()`. |
-| `DashboardData/Services/SensorService.cs` | Service with in‑memory list, `Task.Delay`, and `AddSensor()`. |
-| `DashboardData/Services/UserCounterService.cs` | Simple counter service for DI lifetimes experiment. |
-| `DashboardData/Components/Pages/MyDashboard.razor` | Injected service, async loading, loading spinner. |
-| `DashboardData/Components/Pages/AddSensor.razor` | Page to add a new sensor (Exercice 1). |
-| `DashboardData/Components/Pages/Counter.razor` | Modified to demonstrate DI lifetimes (Bonus). |
-| `DashboardData/Program.cs` | Service registrations (`AddScoped<ISensorService, SensorService>()`, and one lifetime for `UserCounterService`). |
-| `DashboardData/tp4-add-sensor.png` | Screenshot of the "Ajouter un capteur" page. |
-| `DashboardData/tp4-bonus-counter.png` | Screenshot of the Counter page showing DI counter and instance ID. |
-| *(other files from TP3)* | Converter, Logs, models, etc. |
+| `DashboardData/Models/Location.cs` | Location entity (1‑to‑N with SensorData). |
+| `DashboardData/Models/Tag.cs` | Tag entity (N‑to‑N with SensorData). |
+| `DashboardData/Models/SensorData.cs` | Updated with `LocationId`, `Location`, `Tags`. |
+| `DashboardData/Models/SensorValueHistory.cs` | History table (Exercice 2). |
+| `DashboardData/Data/AppDbContext.cs` | DbContext with DbSets. |
+| `DashboardData/Services/SensorService.cs` | Now uses `AppDbContext` and `Include`. |
+| `DashboardData/Program.cs` | DbContext registration and seeding code. |
+| `DashboardData/app.db` | SQLite database file. |
+| `DashboardData/tp5-dashboard-seeded.png` | Screenshot of dashboard showing Location column. |
+| `DashboardData/tp5-sqlite-viewer.png` | Screenshot of SQLite Viewer showing tables. |
 
 
 ## ▶️ How to run
@@ -114,59 +122,32 @@ cd DashboardData
 dotnet watch
 ```
 
-Then open in your browser:
-- Main dashboard (with loading spinner): `https://localhost:5056/dashboard`
-- Add sensor page: `https://localhost:5056/add-sensor`
-- Counter page (DI lifetime experiment): `https://localhost:5056/counter`
+Then open `https://localhost:5056/dashboard`. The dashboard will display the seeded sensors with their locations.
 
 
 ## 📸 Execution output
 
-### Exercice 1 – Add Sensor page
-![Add sensor screenshot](DashboardData/tp4-add-sensor.png)
+### Dashboard with Location column
+![Dashboard seeded](DashboardData/tp5-dashboard-seeded.png)
 
-### Bonus – DI lifetimes experiment (Counter page)
-![Counter page with DI counter](DashboardData/tp4-bonus-counter.png)
-
----
-
-## 🧪 Bonus – DI Lifetimes Experiment (explanation)
-
-In `Counter.razor`, I injected `UserCounterService` twice (or once, depending on the test) and displayed:
-- Instance ID (to see if it's the same or different)
-- Current count
-- Buttons to increment
-
-By changing the registration in `Program.cs` between `AddSingleton`, `AddScoped`, and `AddTransient`, I observed:
-
-| Lifetime | Behavior |
-|----------|----------|
-| `Singleton` | One instance shared across all browser tabs. Increment in Tab A → refresh Tab B shows the updated count. |
-| `Scoped` | Each tab gets its own instance. Increments are isolated. |
-| `Transient` | Even within the same page, each injection gets a new instance. |
-
-**Conclusion:** DI lifetimes control how long and where a service instance lives. Choosing the right lifetime is important for performance and correctness.
-
+### SQLite Viewer showing tables (including SensorValueHistory)
+![SQLite Viewer](DashboardData/tp5-sqlite-viewer.png)
 
 
 ## 🧠 What I learned
 
-- ✅ How to create a **service** (plain C# class) and an **interface**.
-- ✅ How to **register** the service in `Program.cs` (`AddScoped`, `AddSingleton`, `AddTransient`).
-- ✅ How to **inject** the service into a component using `@inject`.
-- ✅ The difference between **synchronous** and **asynchronous** service methods.
-- ✅ How to simulate a delay with `Task.Delay`.
-- ✅ How to use `OnInitializedAsync` and add a **loading spinner** (`@if (isLoading)`).
-- ✅ How to build a **form** that sends data to the service (`AddSensor` page).
-- ✅ How to **navigate** programmatically with `NavigationManager`.
-- ✅ The meaning and effect of **Singleton, Scoped, and Transient** lifetimes.
-
+- ✅ How to install EF Core packages and use migrations.
+- ✅ How to define **1‑to‑N** relationships (foreign key + navigation property).
+- ✅ How to define **N‑to‑N** relationships (two `ICollection` navigation properties → EF Core creates pivot table).
+- ✅ How to **seed** data with relationships (two `SaveChanges` calls to get generated Ids).
+- ✅ How to add a new table (`SensorValueHistory`) and migrate without losing existing data.
+- ✅ How to use `Include()` to load related data in a single query.
 
 
 ## 🔗 Branch information
 
-This code is stored in the **`tp4` branch** of the repository.  
-It builds on the work from the `tp3` branch (the dashboard, converter, and logs are still there, but the main dashboard now uses DI, async, and a loading spinner; the `AddSensor` page and counter experiment are new).
+This code is stored in the **`tp5` branch** of the repository.  
+It builds on the work from `tp4` (services, DI, async) and adds a real SQLite database.
 
 ---
 

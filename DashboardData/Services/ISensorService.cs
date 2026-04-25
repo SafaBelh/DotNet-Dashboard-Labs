@@ -4,6 +4,6 @@ namespace DashboardData.Services;
 
 public interface ISensorService
 {
-    List<SensorData> GetSensors();
-    void AddSensor(SensorData sensor);
+    Task<List<SensorData>> GetSensorsAsync();
+    Task AddSensorAsync(SensorData sensor);
 }
