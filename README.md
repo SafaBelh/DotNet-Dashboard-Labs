@@ -61,7 +61,7 @@ Data persists across restarts
 
 
 
-## 🔧 New Concepts (Explained for Beginners)
+## 🔧 New Concepts
 
 - **`[Key]`** – marks a property as the Primary Key.
 - **`[Required]`** – database column cannot be `NULL`.
