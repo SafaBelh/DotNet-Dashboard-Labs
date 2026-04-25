@@ -12,65 +12,111 @@
     Nous sommes le : <strong>@DateTime.Now.ToString("dd MMMM yyyy")</strong>
 </div>
 
-<p>
-    Status du système :
-    @if (IsSystemOK)
-    {
-        <span class="badge bg-success">Opérationnel</span>
-    }
-    else
-    {
-        <span class="badge bg-danger">Erreur Critique</span>
-    }
-</p>
-
-<button class="btn btn-primary" @onclick="RefreshSystem">Actualiser le statut</button>
-
-<div class="mt-3 card card-body">
-    Logs : @LastLog
+<!-- KPIs Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">📊 Total sondes</h5>
+                <h2>@totalCount</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">📈 Moyenne globale</h5>
+                <h2>@averageValue.ToString("F1") °C</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">🔥 Valeur max</h5>
+                <h2>@maxValue.ToString("F1") °C</h2>
+            </div>
+        </div>
+    </div>
 </div>
 
-<h2>Capteurs en temps réel</h2>
+<!-- Filter buttons -->
+<div class="mb-3">
+    <button class="btn btn-secondary me-2" @onclick="LoadAll">📋 Toutes les sondes</button>
+    <button class="btn btn-warning" @onclick="LoadCritical">⚠️ Alertes (&gt; 30.0)</button>
+</div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Nom</th>
-            <th>Emplacement</th>
-            <th>Valeur</th>
-
-
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var sensor in sensors)
-        {
+@if (isLoading)
+{
+    <p><em>Chargement des données...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>@sensor.Name</td>
-                <td>@(sensor.Location?.Name ?? "Non défini")</td>
-                <td>@sensor.Value</td>
-
+                <th>Nom</th>
+                <th>Emplacement</th>
+                <th>Valeur</th>
+                <th>Tags</th>
             </tr>
-        }
-    </tbody>
-</table>
-
+        </thead>
+        <tbody>
+            @foreach (var sensor in sensors)
+            {
+                <tr>
+                    <td>@sensor.Name</td
+                    <td>@(sensor.Location?.Name ?? "Non défini")</td
+                    <td>@sensor.Value</td
+                    <td>@string.Join(", ", sensor.Tags.Select(t => t.Label))</td
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
     private bool IsSystemOK = true;
     private string LastLog = "Rien à signaler";
     private List<SensorData> sensors = new();
+    private bool isLoading = true;
+
+    // KPI variables
+    private int totalCount = 0;
+    private double averageValue = 0;
+    private double maxValue = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAll();
+        await LoadKPIs();
+    }
+
+    private async Task LoadAll()
+    {
+        isLoading = true;
+        sensors = await SensorService.GetSensorsAsync();
+        isLoading = false;
+    }
+
+    private async Task LoadCritical()
+    {
+        isLoading = true;
+        sensors = await SensorService.GetCriticalSensorsAsync(30.0);
+        isLoading = false;
+    }
+
+    private async Task LoadKPIs()
+    {
+        totalCount = await SensorService.GetTotalCountAsync();
+        averageValue = await SensorService.GetAverageValueAsync();
+        maxValue = await SensorService.GetMaxValueAsync();
+    }
 
     private void RefreshSystem()
     {
         var rnd = new Random();
         IsSystemOK = rnd.Next(0, 10) > 2;
         LastLog = IsSystemOK ? "Tout va bien" : "Anomalie détectée !";
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        sensors = await SensorService.GetSensorsAsync();
-
     }
 }

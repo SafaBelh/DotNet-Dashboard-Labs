@@ -1,99 +1,91 @@
-# TP5 – Entity Framework Core & SQLite (Database Persistence)
+# TP6 – Async LINQ to SQL (KPIs & Filtering)
 
 **Author:** safabelhouche  
-**Branch:** `tp5`  
+**Branch:** `tp6`  
 **Date:** April 2025  
 
 
 
-## 🧭 TP5 – Overview
+## 🧭 TP6 – Overview
 
 ### 🎯 General Objective
-Replace the **in‑memory list** in `SensorService` with a **real SQLite database** using Entity Framework Core (EF Core).  
-Learn **Code‑First** development: define C# classes, and EF Core creates the database schema.  
-Understand **relationships** (1‑to‑N, N‑to‑N) and **migrations**.
+Make the dashboard **efficient** by moving data processing (filtering, sorting, aggregations) **from the application to the database**.  
+Use **async LINQ** methods like `Where`, `OrderByDescending`, `CountAsync`, `AverageAsync`, `MaxAsync` – they are translated to SQL and executed inside SQLite.
 
-### 🧠 Why EF Core?
-- **ORM** – maps C# objects to database tables.
-- **LINQ to SQL** – queries written in LINQ are translated to SQL and executed on the DB.
-- **Migrations** – version control for your database schema.
-- **Relationships** – easy handling of foreign keys and pivot tables.
+### 🧠 Why async LINQ on the database?
+- **Performance** – only the needed rows are sent over the network.
+- **Scalability** – aggregations (`Count`, `Average`, `Max`) are computed on the DB side.
+- **Clean code** – no manual loops; declarative queries.
+
+**MERN comparison:**  
+`_context.Sensors.CountAsync()` ≈ `Sensor.countDocuments()`  
+`_context.Sensors.Where(s => s.Value > 30).ToListAsync()` ≈ `Sensor.find({ value: { $gt: 30 } })`
 
 
 
-## 📋 TP5 Activities 
+## 📋 TP6 Activities 
 
 | Activity | What I did | What I learned |
 |----------|------------|----------------|
-| **1** | Installed EF Core packages (`Sqlite`, `Design`, `dotnet-ef` tool) | Tooling for migrations |
-| **2** | Added `Location` and `Tag` models, modified `SensorData` | Relationships: 1‑to‑N, N‑to‑N |
-| **3** | Created `AppDbContext` with `DbSet<>` properties | The bridge between C# and database |
-| **4** | Configured connection string in `appsettings.json` and registered DbContext in `Program.cs` | DI for DbContext |
-| **5** | Ran migrations (`InitialCreate`) and updated database | Generated SQLite file `app.db` |
-| **6** | Seeded the database with Locations, Tags, Sensors with relations – **Exercice 1** | Data seeding |
-| **7** | Added `SensorValueHistory` model and migration – **Exercice 2** | Adding a new 1‑to‑N relationship |
+| **1** | Added `GetTotalCountAsync`, `GetAverageValueAsync`, `GetMaxValueAsync` to service | Aggregation methods that run on the DB |
+| **2** | Added `GetCriticalSensorsAsync(threshold)` with `Where` and `OrderByDescending` | Server‑side filtering and sorting |
+| **3** | Displayed KPIs in Bootstrap cards | Presenting aggregated data |
+| **4** | Added buttons to switch between "All sensors" and "Critical sensors" | Real‑time filtering without page reload |
+| **5** | Added loading spinner (`@if (isLoading)`) | Improved user experience |
 
-At the end, the dashboard reads and writes data from/to a real SQLite database.
+At the end, the dashboard shows KPIs and can filter sensors by value.
 
 
 
-## 🗺️ Flow Diagram – Before vs After TP5
+## 🗺️ Flow Diagram – Efficient Queries
 
-### Before (TP4 – in‑memory list)
 ```
-SensorService (private List<SensorData> _sensors)
+User clicks "Alertes (>30.0)"
          ↓
-MyDashboard.razor displays data from memory
+MyDashboard.razor calls SensorService.GetCriticalSensorsAsync(30)
          ↓
-Data lost on app restart
-```
-
-### After (TP5 – SQLite database)
-```
-AppDbContext (connected to app.db)
+EF Core translates LINQ to SQL:
+   SELECT * FROM Sensors
+   WHERE Value > 30
+   ORDER BY Value DESC
          ↓
-SensorService (uses DbContext to query database)
+SQLite executes query and returns only filtered rows
          ↓
-MyDashboard.razor displays data from real DB
-         ↓
-Data persists across restarts
+Dashboard updates without loading all sensors
 ```
 
+---
+
+## 🔧 Key LINQ Methods Explained 
+
+| Method | Purpose | SQL equivalent | JS equivalent |
+|--------|---------|----------------|----------------|
+| `.CountAsync()` | Returns number of rows | `SELECT COUNT(*)` | `await collection.countDocuments()` |
+| `.AverageAsync(s => s.Value)` | Average of a column | `SELECT AVG(Value)` | manual reduce / aggregate |
+| `.MaxAsync(s => s.Value)` | Maximum value | `SELECT MAX(Value)` | `Math.max` + map / aggregate |
+| `.Where(s => s.Value > threshold)` | Filter rows | `WHERE Value > @threshold` | `.filter()` |
+| `.OrderByDescending(s => s.Value)` | Sort descending | `ORDER BY Value DESC` | `.sort((a,b)=>b-a)` |
+| `.Include(s => s.Location)` | Eager load related entity | `LEFT JOIN Locations` | `.populate()` |
+
+All these methods are **executed inside the database** – only the final result is sent to the app.
 
 
-## 🔧 New Concepts (Explained for Beginners)
 
-- **`[Key]`** – marks a property as the Primary Key.
-- **`[Required]`** – database column cannot be `NULL`.
-- **`[StringLength(100)]`** – maximum length of a string column.
-- **`ICollection<T>`** – navigation property for relationships (e.g., one Location has many Sensors).
-- **`Include()`** – eager loading: loads related data in a single query (SQL JOIN).
-- **Migrations** – `dotnet ef migrations add Name` creates C# files describing schema changes; `dotnet ef database update` applies them.
-- **Seeding** – inserting initial data when the database is first created.
-
-
-
-## 📁 Project Structure (after TP5)
+## 📁 Project Structure (after TP6)
 
 ```
 DashboardData/
 ├── Components/
-│   ├── Layout/
 │   └── Pages/
-├── Data/
-│   └── AppDbContext.cs
-├── Models/
-│   ├── SensorData.cs
-│   ├── Location.cs
-│   ├── Tag.cs
-│   └── SensorValueHistory.cs          ← Exercice 2
+│       └── MyDashboard.razor          ← updated with KPIs and filter buttons
 ├── Services/
-│   ├── ISensorService.cs
-│   └── SensorService.cs               ← now uses DbContext
-├── Migrations/                        ← auto‑generated
-├── appsettings.json                   ← connection string added
-├── Program.cs                         ← DbContext registration
-├── app.db                             ← SQLite database file
+│   ├── ISensorService.cs              ← new async methods
+│   └── SensorService.cs               ← implementations with EF Core
+├── Models/                            ← unchanged from TP5
+├── Data/                              ← unchanged
+├── app.db                             ← SQLite database
+├── tp6-dashboard-full.png             ← screenshot (all sensors)
+├── tp6-dashboard-critical.png         ← screenshot (critical only)
 └── ...
 ```
 
@@ -103,16 +95,12 @@ DashboardData/
 
 | File | Description |
 |------|-------------|
-| `DashboardData/Models/Location.cs` | Location entity (1‑to‑N with SensorData). |
-| `DashboardData/Models/Tag.cs` | Tag entity (N‑to‑N with SensorData). |
-| `DashboardData/Models/SensorData.cs` | Updated with `LocationId`, `Location`, `Tags`. |
-| `DashboardData/Models/SensorValueHistory.cs` | History table (Exercice 2). |
-| `DashboardData/Data/AppDbContext.cs` | DbContext with DbSets. |
-| `DashboardData/Services/SensorService.cs` | Now uses `AppDbContext` and `Include`. |
-| `DashboardData/Program.cs` | DbContext registration and seeding code. |
-| `DashboardData/app.db` | SQLite database file. |
-| `DashboardData/tp5-dashboard-seeded.png` | Screenshot of dashboard showing Location column. |
-| `DashboardData/tp5-sqlite-viewer.png` | Screenshot of SQLite Viewer showing tables. |
+| `DashboardData/Services/ISensorService.cs` | Added `GetTotalCountAsync`, `GetAverageValueAsync`, `GetMaxValueAsync`, `GetCriticalSensorsAsync`. |
+| `DashboardData/Services/SensorService.cs` | Implementations using `CountAsync`, `AverageAsync`, `MaxAsync`, `Where`, `OrderByDescending`. |
+| `DashboardData/Components/Pages/MyDashboard.razor` | KPIs cards, filter buttons, loading spinner. |
+| `DashboardData/tp6-dashboard-full.png` | Screenshot showing all sensors with KPIs. |
+| `DashboardData/tp6-dashboard-critical.png` | Screenshot showing only sensors with value > 30. |
+
 
 
 ## ▶️ How to run
@@ -122,32 +110,36 @@ cd DashboardData
 dotnet watch
 ```
 
-Then open `https://localhost:5056/dashboard`. The dashboard will display the seeded sensors with their locations.
+Then open `https://localhost:5056/dashboard`.  
+Click the **Alertes (>30.0)** button to see only critical sensors.  
+Click **Toutes les sondes** to restore the full list.
+
 
 
 ## 📸 Execution output
 
-### Dashboard with Location column
-![Dashboard seeded](DashboardData/tp5-dashboard-seeded.png)
+### All sensors (default)
+![Full dashboard](DashboardData/tp6-dashboard-full.png)
 
-### SQLite Viewer showing tables (including SensorValueHistory)
-![SQLite Viewer](DashboardData/tp5-sqlite-viewer.png)
+### Critical sensors (value > 30)
+![Critical sensors](DashboardData/tp6-dashboard-critical.png)
+
 
 
 ## 🧠 What I learned
 
-- ✅ How to install EF Core packages and use migrations.
-- ✅ How to define **1‑to‑N** relationships (foreign key + navigation property).
-- ✅ How to define **N‑to‑N** relationships (two `ICollection` navigation properties → EF Core creates pivot table).
-- ✅ How to **seed** data with relationships (two `SaveChanges` calls to get generated Ids).
-- ✅ How to add a new table (`SensorValueHistory`) and migrate without losing existing data.
-- ✅ How to use `Include()` to load related data in a single query.
+- ✅ **Server‑side filtering** – `Where` clause is translated to SQL `WHERE`, reducing network traffic.
+- ✅ **Async aggregations** – `CountAsync`, `AverageAsync`, `MaxAsync` run on the DB, not in memory.
+- ✅ **Eager loading** – `Include()` loads related entities in one query (JOIN).
+- ✅ **Dynamic UI** – buttons switch between different queries without reloading the page.
+- ✅ **Loading spinner** – improves perceived performance during async operations.
+
 
 
 ## 🔗 Branch information
 
-This code is stored in the **`tp5` branch** of the repository.  
-It builds on the work from `tp4` (services, DI, async) and adds a real SQLite database.
+This code is stored in the **`tp6` branch** of the repository.  
+It builds on `tp5` (database, seeding, relationships) and adds efficient LINQ queries and a more interactive dashboard.
 
 ---
 
