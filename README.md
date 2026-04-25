@@ -4,7 +4,7 @@
 **Repository:** [DotNet-Dashboard-Labs](https://github.com/SafaBelh/DotNet-Dashboard-Labs)  
 **Year:** 2025
 
----
+
 
 ## 🧭 Overview
 
@@ -13,7 +13,7 @@ Each lab builds on the previous one, starting from console basics and ending wit
 
 All code is stored in **separate Git branches** – one per TP.
 
----
+
 
 ## 🌿 Branches (TP1 → TP9)
 
@@ -31,13 +31,13 @@ All code is stored in **separate Git branches** – one per TP.
 
 Each branch contains a **detailed README** explaining its objectives, activities, and screenshots.
 
----
+
 
 ## 💻 How to explore
 
 1. **Clone the repository**  
    ```bash
-   git clone https://github.com/YOUR_USERNAME/DotNet-Dashboard-Labs.git
+   git clone https://github.com/SafaBelh/DotNet-Dashboard-Labs.git
    cd DotNet-Dashboard-Labs
    ```
 
@@ -60,7 +60,7 @@ Each branch contains a **detailed README** explaining its objectives, activities
 
 4. **Read the lab instructions** inside each branch's `README.md` (visible on GitHub).
 
----
+
 
 ## 🧠 What I learned (overall)
 
