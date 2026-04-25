@@ -4,6 +4,7 @@
 @using DashboardData.Services
 @inject ISensorService SensorService
 @inject IJSRuntime JS
+@using DashboardData.Components.UI
 
 <PageTitle>Mon Dashboard</PageTitle>
 
@@ -13,31 +14,23 @@
     Nous sommes le : <strong>@DateTime.Now.ToString("dd MMMM yyyy")</strong>
 </div>
 
+<button class="btn btn-outline-secondary mb-3" @onclick="() => showAsCards = !showAsCards">
+    @(showAsCards ? "📋 Vue tableau" : "🃏 Vue cartes")
+</button>
+
 <!-- KPIs Cards -->
 <div class="row mb-4">
     <div class="col-md-4">
-        <div class="card text-white bg-primary">
-            <div class="card-body">
-                <h5 class="card-title">📊 Total sondes</h5>
-                <h2>@totalCount</h2>
-            </div>
-        </div>
+        <KpiCard Title="📊 Total sondes" Value="@totalCount.ToString()" BackgroundColorClass="bg-primary"
+            IconClass="bi-box-seam" />
     </div>
     <div class="col-md-4">
-        <div class="card text-white bg-success">
-            <div class="card-body">
-                <h5 class="card-title">📈 Moyenne globale</h5>
-                <h2>@averageValue.ToString("F1") °C</h2>
-            </div>
-        </div>
+        <KpiCard Title="📈 Moyenne globale" Value="@($"{averageValue:F1} °C")" BackgroundColorClass="bg-success"
+            IconClass="bi-bullseye)" />
     </div>
     <div class="col-md-4">
-        <div class="card text-white bg-danger">
-            <div class="card-body">
-                <h5 class="card-title">🔥 Valeur max</h5>
-                <h2>@maxValue.ToString("F1") °C</h2>
-            </div>
-        </div>
+        <KpiCard Title="🔥 Valeur max" Value="@($"{maxValue:F1} °C")" BackgroundColorClass="bg-danger"
+            IconClass="bi-exclamation-triangle-fill" />
     </div>
 </div>
 
@@ -54,33 +47,21 @@
 }
 else
 {
-    <table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Nom</th>
-            <th>Emplacement</th>
-            <th>Valeur</th>
-            <th>Tags</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var sensor in sensors)
+    @if (showAsCards)
+    {
+        <div class="row">
+            @foreach (var sensor in sensors)
             {
-                <tr>
-                    <td>@sensor.Name</td <td>@(sensor.Location?.Name ?? "Non défini")</td <td>@sensor.Value</td <td>
-                        @string.Join(", ", sensor.Tags.Select(t => t.Label))</td>
-                    <td>
-                        <a href="/edit-sensor/@sensor.Id" class="btn btn-sm btn-outline-primary">✏️ Éditer</a>
-                        <button class="btn btn-sm btn-outline-danger ms-2" @onclick="() => DeleteSensor(sensor.Id)">🗑️
-                            Supprimer</button>
-                    </td>
-
-
-
-                </tr>
+                <div class="col-md-4 mb-3">
+                    <SensorCard Sensor="sensor" OnDeleteClicked="DeleteSensor" />
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    }
+    else
+    {
+        <SensorTable Sensors="sensors" OnDeleteClicked="DeleteSensor" />
+    }
 }
 
 @code {
@@ -88,6 +69,7 @@ else
     private string LastLog = "Rien à signaler";
     private List<SensorData> sensors = new();
     private bool isLoading = true;
+    private bool showAsCards = false;
 
     // 🟣🟣🟣 KPI VARIABLES
     private int totalCount = 0;

@@ -1,127 +1,115 @@
-# TP7 – CRUD Forms & Validation (Unified Add/Edit)
+# TP8 – Component Architecture & Communication
 
 **Author:** safabelhouche  
-**Branch:** `tp7`  
+**Branch:** `tp8`  
 **Date:** April 2025  
 
 
-## 🧭 TP7 – Overview
+
+## 🧭 TP8 – Overview
 
 ### 🎯 General Objective
-Add **full CRUD** (Create, Read, Update, Delete) to the sensor dashboard using Blazor's built‑in forms and validation.  
-Create a **unified form** (`EditSensor.razor`) that handles both adding and editing sensors via an optional `Id` route parameter.  
-Use **Data Annotations** to automatically validate user input (`[Required]`, `[StringLength]`, `[Range]`).  
-Add **Edit** and **Delete** buttons to the dashboard table, with a **confirmation dialog** for deletion (bonus exercise).
+Refactor the dashboard into **reusable UI components** to make the code modular, maintainable, and testable.  
+Learn how to pass data **from parent to child** using `[Parameter]` and how to send events **from child back to parent** using `EventCallback`.  
+Create components for KPIs (`KpiCard`), sensor table (`SensorTable`), and sensor card (`SensorCard`).  
+Add a **view toggle** to switch between table and card layouts.
 
-### 🧠 Why this matters
-- **CRUD** is the foundation of most line‑of‑business applications.
-- **Unified form** avoids code duplication (same form for add and edit).
-- **DataAnnotations validation** gives you client‑side (and server‑side) validation without writing JavaScript.
-- The **delete confirmation** prevents accidental data loss.
+### 🧠 Why component architecture?
+- **Reusability** – components can be used in multiple places.
+- **Separation of concerns** – each component does one thing.
+- **Easier maintenance** – change one component, affect all its uses.
+- **Better collaboration** – different developers can work on different components.
 
 
 
-## 📋 TP7 Activities 
+## 📋 TP8 Activities 
 
 | Activity | What I did | What I learned |
 |----------|------------|----------------|
-| **1** | Extended `ISensorService` with `GetSensorByIdAsync`, `UpdateSensorAsync`, `DeleteSensorAsync` | Full CRUD on service layer |
-| **2** | Created `EditSensor.razor` with two routes (`/edit-sensor`, `/edit-sensor/{Id:int}`) | Unified add/edit pattern |
-| **3** | Used `EditForm`, `DataAnnotationsValidator`, `InputText`, `InputNumber`, `InputSelect` | Blazor form handling and validation |
-| **4** | Added validation attributes to `SensorData` model | `[Required]`, `[StringLength]`, `[Range]`, `[Range]` for LocationId |
-| **5** | Updated `MyDashboard.razor` with **Edit** and **Delete** buttons | Integrating CRUD in the UI |
-| **6** | Added delete confirmation using `IJSRuntime` (bonus) | Calling JavaScript `confirm` from C# |
-| **7** | Added Location dropdown to the form | Avoiding foreign key errors |
+| **1** | Created `KpiCard.razor` with `[Parameter]` properties | Passing simple data (string, number) to a child component |
+| **2** | Replaced the three hardcoded cards in `MyDashboard` with `<KpiCard>` | Composition and reusability |
+| **3** | Created `SensorTable.razor` and moved the table HTML | Passing a list of objects via `[Parameter]` |
+| **4** | Added `EventCallback<int> OnDeleteClicked` to `SensorTable` | Child‑to‑parent communication (notifying parent of an action) |
+| **5** | Created `SensorCard.razor` (Exercise 1) | Displaying a single sensor as a Bootstrap card |
+| **6** | Added view toggle (table / cards) with a button (Exercise 2) | Conditional rendering and UI state management |
 
-At the end, the dashboard has a complete CRUD interface with validation and confirmation.
-
+At the end, `MyDashboard.razor` is clean and composed of reusable components.
 
 
-## 🗺️ Flow Diagram – Add / Edit Sensor
 
-### Add mode (no ID in URL)
+## 🗺️ Communication Flow Diagram
+
+### Parent → Child (data)
 ```
-User clicks "➕ Nouveau capteur" → navigates to /edit-sensor
-         ↓
-EditSensor.razor loads → currentSensor = new SensorData()
-         ↓
-User fills Name, Value, chooses Location → clicks Enregistrer
-         ↓
-OnValidSubmit triggers HandleValidSubmit (validation passes)
-         ↓
-AddSensorAsync called (because Id is null) → sensor saved to database
-         ↓
-Redirect to /dashboard → dashboard shows updated list + refreshed KPIs
+MyDashboard.razor
+    <KpiCard Title="Total sondes" Value="@totalCount" ... />
+                    ↓
+            [Parameter] string Title
+            [Parameter] string Value
+                    ↓
+            KpiCard displays the data
 ```
 
-### Edit mode (ID in URL, e.g., /edit-sensor/5)
+### Child → Parent (events)
 ```
-User clicks "✏️ Éditer" next to a sensor → navigates to /edit-sensor/{Id}
-         ↓
-EditSensor.razor loads → fetches existing sensor by Id via GetSensorByIdAsync
-         ↓
-Form pre‑filled with existing Name, Value, Location
-         ↓
-User modifies data → clicks Enregistrer
-         ↓
-OnValidSubmit triggers HandleValidSubmit (validation passes)
-         ↓
-UpdateSensorAsync called → changes saved to database
-         ↓
-Redirect to /dashboard → dashboard shows updated list + refreshed KPIs
+SensorTable.razor
+    <button @onclick="() => OnDeleteClicked.InvokeAsync(sensor.Id)">
+                    ↓
+            EventCallback<int> OnDeleteClicked
+                    ↓
+            MyDashboard.razor binds OnDeleteClicked="DeleteSensor"
+                    ↓
+            DeleteSensor(int id) runs in the parent
 ```
 
 
 
-## 🔧 Key Blazor Form Concepts
+## 🔧 Key Blazor Component Concepts 
 
-| Component | Purpose | Equivalent in React |
-|-----------|---------|---------------------|
-| `EditForm` | Wraps form, handles validation and submission | `<form onSubmit={...}>` |
-| `DataAnnotationsValidator` | Reads validation attributes from model | `yup` / `zod` integration |
-| `ValidationSummary` | Displays all validation errors | `errors.summary` |
-| `ValidationMessage` | Displays error for a specific field | `errors.name?.message` |
-| `InputText` | Text input with validation integration | `<input>` + `value` + `onChange` |
-| `InputNumber` | Numeric input with validation | `<input type="number">` |
-| `InputSelect` | Dropdown with validation | `<select>` + `value` + `onChange` |
+| Concept | Purpose | MERN equivalent |
+|---------|---------|-----------------|
+| `[Parameter]` | Receives data from parent component | `props` in React |
+| `EventCallback<T>` | Sends an event (with data) from child to parent | callback function passed as prop |
+| `@bind-Value` | Two‑way binding on component parameters | `value` + `onChange` |
+| Child component reuse | `<KpiCard ... />` multiple times | `<KpiCard ... />` in JSX |
+| `@if` / `@else` | Conditional rendering | ternary or `&&` operator |
 
 
 
-## 📁 Project Structure (after TP7)
+## 📁 Project Structure (after TP8)
 
 ```
 DashboardData/
 ├── Components/
+│   ├── UI/                                 ← new folder for reusable components
+│   │   ├── KpiCard.razor                   ← displays a single KPI
+│   │   ├── SensorTable.razor               ← displays the sensor table (with delete event)
+│   │   └── SensorCard.razor                ← displays a single sensor as a card
 │   └── Pages/
-│       ├── MyDashboard.razor          ← added Edit/Delete buttons
-│       └── EditSensor.razor           ← unified add/edit form
+│       └── MyDashboard.razor               ← now uses these components
 ├── Models/
-│   └── SensorData.cs                  ← added validation attributes
 ├── Services/
-│   ├── ISensorService.cs              ← CRUD methods
-│   └── SensorService.cs               ← implementations
-├── Data/                              ← (unchanged)
-├── app.db                             ← SQLite database
-├── tp7-edit-form.png                  ← screenshot of edit form
-├── tp7-dashboard.png                  ← screenshot of dashboard with buttons
+├── Data/
+├── wwwroot/
+├── tp8-dashboard-table.png                 ← screenshot (table view)
+├── tp8-dashboard-cards.png                 ← screenshot (card view)
 └── ...
 ```
 
-
+---
 
 ## 📂 Files in this branch
 
 | File | Description |
 |------|-------------|
-| `DashboardData/Components/Pages/EditSensor.razor` | Unified form for add and edit, with validation and Location dropdown. |
-| `DashboardData/Components/Pages/MyDashboard.razor` | Added "Nouveau capteur" button, Edit and Delete buttons, delete confirmation. |
-| `DashboardData/Models/SensorData.cs` | Validation attributes: `[Required]`, `[StringLength]`, `[Range]`. |
-| `DashboardData/Services/ISensorService.cs` | Added `GetSensorByIdAsync`, `UpdateSensorAsync`, `DeleteSensorAsync`, `GetLocationsAsync`. |
-| `DashboardData/Services/SensorService.cs` | Implementations using EF Core. |
-| `DashboardData/tp7-edit-form.png` | Screenshot of the form with dropdown and validation error (if any). |
-| `DashboardData/tp7-dashboard.png` | Screenshot of the dashboard with Edit/Delete buttons. |
+| `DashboardData/Components/UI/KpiCard.razor` | Reusable KPI card (Title, Value, BackgroundColor, Icon). |
+| `DashboardData/Components/UI/SensorTable.razor` | Table component that receives `List<SensorData>` and an `EventCallback` for delete. |
+| `DashboardData/Components/UI/SensorCard.razor` | Card component for a single sensor (Exercise 1). |
+| `DashboardData/Components/Pages/MyDashboard.razor` | Refactored to use `<KpiCard>`, `<SensorTable>`, and view toggle. |
+| `DashboardData/tp8-dashboard-table.png` | Screenshot of the dashboard in table view. |
+| `DashboardData/tp8-dashboard-cards.png` | Screenshot of the dashboard in card view. |
 
-
+---
 
 ## ▶️ How to run
 
@@ -130,44 +118,36 @@ cd DashboardData
 dotnet watch
 ```
 
-Then open:
-- Dashboard: `https://localhost:5000/dashboard`
-- Add a new sensor: click **➕ Nouveau capteur** (or navigate to `/edit-sensor`)
-- Edit an existing sensor: click **✏️ Éditer** next to a sensor
-- Delete a sensor: click **🗑️ Supprimer** → confirmation dialog appears
+Then open `https://localhost:5056/dashboard`.  
+Click the **"🃏 Vue cartes"** button to switch to card view; click **"📋 Vue tableau"** to go back.
 
-
+---
 
 ## 📸 Execution output
 
-### Dashboard with Edit and Delete buttons
-![Dashboard buttons screenshot](DashboardData/tp7-dashboard.png)
+### Table view (default)
+![Table view screenshot](DashboardData/tp8-dashboard-table.png)
 
-### Edit / Add Sensor Form (with Location dropdown)
-![Edit form screenshot](DashboardData/tp7-edit-form.png)
-
-
-### Confirm delete dialog (IJSRuntime)
-![Dashboard buttons screenshot](DashboardData/tp7-confirm-delete-dialog.png)
+### Card view (after clicking the toggle button)
+![Card view screenshot](DashboardData/tp8-dashboard-cards.png)
 
 
 
 ## 🧠 What I learned
 
-- ✅ How to create a **unified add/edit page** using an optional route parameter.
-- ✅ How to use `EditForm`, `DataAnnotationsValidator`, and `ValidationMessage` for automatic validation.
-- ✅ How to add **validation attributes** to a model (`[Required]`, `[StringLength]`, `[Range]`).
-- ✅ How to **load dropdown data** (Locations) asynchronously in a form.
-- ✅ How to add **Edit** and **Delete** buttons to a table.
-- ✅ How to **call JavaScript** from Blazor (`IJSRuntime.InvokeAsync<bool>("confirm", ...)`) for a confirmation dialog.
-- ✅ How to **refresh the table and KPIs** after a delete operation.
+- ✅ How to create **dumb components** that receive data via `[Parameter]`.
+- ✅ How to **reuse** the same component multiple times with different data.
+- ✅ How to use `EventCallback<T>` to **notify the parent** when an action occurs (e.g., delete button clicked).
+- ✅ How to **move logic** (like delete) out of child components – children only emit events, parents handle the actual operation.
+- ✅ How to add a **view toggle** to switch between two different visual representations of the same data.
+- ✅ How to keep `MyDashboard.razor` clean and focused on orchestrating components.
 
 
 
 ## 🔗 Branch information
 
-This code is stored in the **`tp7` branch** of the repository.  
-It builds on the work from `tp6` (KPIs, async LINQ) and adds full CRUD with validation.
+This code is stored in the **`tp8` branch** of the repository.  
+It builds on `tp7` (CRUD, validation) and adds component architecture and view toggle.
 
 ---
 

@@ -1,0 +1,33 @@
+@using DashboardData.Models
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Emplacement</th>
+            <th>Valeur</th>
+            <th>Tags</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sensor in Sensors)
+        {
+            <tr>
+                <td>@sensor.Name</td
+                <td>@(sensor.Location?.Name ?? "Non défini")</td
+                <td>@sensor.Value</td
+                <td>@string.Join(", ", sensor.Tags.Select(t => t.Label))</td
+                <td>
+                    <a href="/edit-sensor/@sensor.Id" class="btn btn-sm btn-outline-primary">✏️ Éditer</a>
+                    <button class="btn btn-sm btn-outline-danger ms-2" @onclick="() => OnDeleteClicked.InvokeAsync(sensor.Id)">🗑️ Supprimer</button>
+                </td
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter] public List<SensorData> Sensors { get; set; } = new();
+    [Parameter] public EventCallback<int> OnDeleteClicked { get; set; }
+}

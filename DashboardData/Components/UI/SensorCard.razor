@@ -1,0 +1,21 @@
+@using DashboardData.Models
+
+<div class="card shadow-sm h-100">
+    <div class="card-body">
+        <h5 class="card-title">@Sensor.Name</h5>
+        <p class="card-text">
+            <strong>Emplacement:</strong> @(Sensor.Location?.Name ?? "Non défini")<br />
+            <strong>Valeur:</strong> @Sensor.Value<br />
+            <strong>Tags:</strong> @string.Join(", ", Sensor.Tags.Select(t => t.Label))
+        </p>
+        <div class="mt-2">
+            <a href="/edit-sensor/@Sensor.Id" class="btn btn-sm btn-outline-primary">✏️ Éditer</a>
+            <button class="btn btn-sm btn-outline-danger ms-2" @onclick="() => OnDeleteClicked.InvokeAsync(Sensor.Id)">🗑️ Supprimer</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public SensorData Sensor { get; set; } = null!;
+    [Parameter] public EventCallback<int> OnDeleteClicked { get; set; }
+}
