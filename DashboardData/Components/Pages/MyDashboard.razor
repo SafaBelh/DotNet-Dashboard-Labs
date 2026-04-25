@@ -1,6 +1,8 @@
 @page "/dashboard"
 @rendermode InteractiveServer
 @using DashboardData.Models
+@using DashboardData.Services
+@inject ISensorService SensorService
 
 <PageTitle>Mon Dashboard</PageTitle>
 
@@ -52,19 +54,17 @@
 @code {
     private bool IsSystemOK = true;
     private string LastLog = "Rien à signaler";
+    private List<SensorData> sensors = new();
 
     private void RefreshSystem()
     {
         var rnd = new Random();
-        IsSystemOK = rnd.Next(0, 10) > 2; // 80% chance of OK
+        IsSystemOK = rnd.Next(0, 10) > 2; 
         LastLog = IsSystemOK ? "Tout va bien" : "Anomalie détectée !";
     }
 
-    private List<SensorData> sensors = new()
-        {
-            new SensorData { Name = "Temp_Salon", Value = 22.5 },
-            new SensorData { Name = "Hum_Cuisine", Value = 45.0 },
-            new SensorData { Name = "CO2_Bureau", Value = 800 }
-        };
-
+    protected override void OnInitialized()
+    {
+        sensors = SensorService.GetSensors();
+    }
 }
