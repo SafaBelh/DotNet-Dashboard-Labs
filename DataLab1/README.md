@@ -4,7 +4,6 @@
 **Branch:** `tp1`  
 **Date:** April 2025  
 
----
 
 ## 📌 Objectives
 - Create a `Sensor` class with properties (`Id`, `Name`, `Type`, `Value`), a constructor, and a validation method `UpdateValue()`.
@@ -17,7 +16,6 @@
   - Maximum value and the name of the sensor that holds it.
   - Number of CO₂ sensors with a value greater than 80 (alerts).
 
----
 
 ## 📂 Files in this branch
 | File | Description |
@@ -28,13 +26,11 @@
 | `Program.cs` | Coordinates the two exercises: calls `Exercice1` to get the list, then passes it to `Exercice2`. |
 | `tp1-output.png` | Screenshot of the terminal output (both exercises). |
 
----
 
 ## 📸 Execution output
 
-![Terminal output](tp1-output.png)
+![Terminal output](DataLab1/tp1-output.png)
 
----
 
 ## 🧠 What I learned
 
@@ -46,14 +42,13 @@
 - ✅ Formatting numbers with two decimal places (`{average:F2}`).
 - ✅ Separating logic into multiple files for clarity and reusability.
 
----
 
 ## 🔗 Branch information
 
 This code is stored in the `tp1` branch of the repository.  
 The `main` branch contains only this README.md (project overview).
 
----
+
 ## ▶️ How to run
 
 ```bash
