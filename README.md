@@ -28,7 +28,7 @@ I already know C# from TP1‑2. Blazor will let me use that same language to bui
 
 
 
-## 📋 TP3 Activities (Teacher's Lab)
+## 📋 TP3 Activities
 
 | Activity | What i did | What i learned |
 |----------|------------------|----------------|
